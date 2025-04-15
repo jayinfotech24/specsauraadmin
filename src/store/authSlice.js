@@ -21,6 +21,19 @@ export const Login = createAsyncThunk("api/login", async (credentials, { rejectW
 })
 
 
+export const AddCategory = createAsyncThunk("api/addcategory", async (credentials, { rejectWithValue }) => {
+
+    try {
+        const response = await axiosInstance.post(`${Appapis.Basurl}${Appapis.addCategory}`, credentials)
+        return response.data
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+
+})
+
+
 const AuthSlice = createSlice({
     name: "auth",
     initialState,
@@ -30,15 +43,27 @@ const AuthSlice = createSlice({
 
     extraReducers: (builder) => {
         builder
-            .addCase(Login.pending, (state, action) => {
+            .addCase(Login.pending, (state) => {
                 state.loading = true
 
             })
-            .addCase(Login.fulfilled, (state, action) => {
+            .addCase(Login.fulfilled, (state) => {
                 state.loading = false;
 
             })
-            .addCase(Login.rejected, (state, action) => {
+            .addCase(Login.rejected, (state) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(AddCategory.pending, (state) => {
+                state.loading = true
+
+            })
+            .addCase(AddCategory.fulfilled, (state,) => {
+                state.loading = false;
+
+            })
+            .addCase(AddCategory.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })
