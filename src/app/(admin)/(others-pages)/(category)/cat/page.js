@@ -1,6 +1,6 @@
 "use client";
 import Input from '@/components/form/input/InputField'
-import React from 'react'
+import React, { useState } from 'react'
 import styles from "../../../../../styles/category.module.css"
 import Label from '@/components/form/Label'
 import ComponentCard from '@/components/common/ComponentCard'
@@ -10,16 +10,28 @@ import FileInput from '@/components/form/input/FileInput';
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
+import { useDispatch } from 'react-redux';
+import { AddCategory, FileUpload } from '@/store/authSlice';
 export default function Index() {
+    const [FileUrl, setFileUrl] = useState(null)
+    const dispatch = useDispatch()
     const handleFileChange = (event) => {
         const file = event.target.files?.[0];
+        console.log("File", file)
+        const formData = new FormData()
         if (file) {
-            console.log("Selected file:", file.name);
+            const uniqueFilename = Date.now() + "-" + file.name;
+            formData.append("file", file, uniqueFilename);
+            dispatch(FileUpload(formData)).then((response) => {
+                console.log("Response", response.payload)
+                setFileUrl(response.payload.fileUrl)
+            })
         }
     };
 
     const schema = Yup.object().shape({
         name: Yup.string().required("Name is required").min(3, "Name must be at least 3 characters"),
+        description: Yup.string().required("Description is required"),
     });
 
 
@@ -31,7 +43,16 @@ export default function Index() {
         resolver: yupResolver(schema),
     });
     const submitHandler = (data) => {
-        console.log(data);
+        const formData = new FormData();
+        const jsonObject = {
+            url: FileUrl,
+            title: data.name,
+            description: data.description
+        }
+
+        dispatch(AddCategory(jsonObject)).then((response) => {
+            console.log("Res", response)
+        })
     };
     return (
         <div className={styles.main}>
@@ -51,7 +72,9 @@ export default function Index() {
                         </div>
                         <div>
                             <Label>Description</Label>
-                            <TextArea rows={6} />
+                            <TextArea  {...register("description")}
+                                error={!!errors.description}
+                                hint={errors.description?.message} rows={6} />
                         </div>
 
                         <div>

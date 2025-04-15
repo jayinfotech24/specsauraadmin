@@ -1,5 +1,6 @@
 import axiosInstance from "./axiosInstance";
 import Appapis from "./apiEndpoints";
+import fileInstance from "./fileInstance"
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 const initialState = {
     count: 0,
@@ -33,7 +34,17 @@ export const AddCategory = createAsyncThunk("api/addcategory", async (credential
 
 })
 
+export const FileUpload = createAsyncThunk("api/upload", async (credentials, { rejectWithValue }) => {
 
+    try {
+        const response = await fileInstance.post(`${Appapis.Basurl}${Appapis.fileUpload}`, credentials)
+        return response.data
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong", error);
+    }
+
+})
 const AuthSlice = createSlice({
     name: "auth",
     initialState,
@@ -64,6 +75,18 @@ const AuthSlice = createSlice({
 
             })
             .addCase(AddCategory.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(FileUpload.pending, (state) => {
+                state.loading = true
+
+            })
+            .addCase(FileUpload.fulfilled, (state,) => {
+                state.loading = false;
+
+            })
+            .addCase(FileUpload.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })

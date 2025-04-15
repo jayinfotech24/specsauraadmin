@@ -9,7 +9,7 @@ const fileInstance = axios.create({
 });
 fileInstance.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem("userToken");
+        const token = localStorage.getItem("authToken");
 
 
 
