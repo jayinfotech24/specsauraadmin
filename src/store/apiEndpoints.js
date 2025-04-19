@@ -5,7 +5,8 @@ const Appapis = {
     fileUpload: "/upload",
     addProduct: "/product",
     wallpaper: "/wallpaper",
-    video: "/video"
+    video: "/video",
+    categoryDetail: (id) => `/category/${id}`
 }
 
 export default Appapis

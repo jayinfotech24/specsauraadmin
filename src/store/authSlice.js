@@ -89,6 +89,17 @@ export const AddVideo = createAsyncThunk("api/addVideo", async (credentials, { r
     }
 
 })
+export const CategoryDetail = createAsyncThunk(
+    "api/productDetail",
+    async (id, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.get(`${Appapis.Basurl}${Appapis.categoryDetail(id)}`);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data || "Something went wrong");
+        }
+    }
+);
 const AuthSlice = createSlice({
     name: "auth",
     initialState,
@@ -179,6 +190,18 @@ const AuthSlice = createSlice({
 
             })
             .addCase(AddVideo.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(CategoryDetail.pending, (state) => {
+                state.loading = true
+
+            })
+            .addCase(CategoryDetail.fulfilled, (state,) => {
+                state.loading = false;
+
+            })
+            .addCase(CategoryDetail.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })

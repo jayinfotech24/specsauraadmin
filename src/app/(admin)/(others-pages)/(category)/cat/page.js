@@ -1,6 +1,6 @@
 "use client";
 import Input from '@/components/form/input/InputField'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import styles from "../../../../../styles/category.module.css"
 import Label from '@/components/form/Label'
 import ComponentCard from '@/components/common/ComponentCard'
@@ -11,7 +11,8 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
 import { useDispatch } from 'react-redux';
-import { AddCategory, FileUpload } from '@/store/authSlice';
+import { AddCategory, CategoryDetail, FileUpload } from '@/store/authSlice';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 export default function Index() {
     const [FileUrl, setFileUrl] = useState(null)
     const dispatch = useDispatch()
@@ -34,6 +35,10 @@ export default function Index() {
         name: Yup.string().required("Name is required").min(3, "Name must be at least 3 characters"),
         description: Yup.string().required("Description is required"),
     });
+
+
+    const searchParams = useSearchParams();
+    const id = searchParams.get("id");
 
 
     const {
@@ -60,6 +65,14 @@ export default function Index() {
             setIsLoding(false)
         })
     };
+
+    useEffect(() => {
+        if (id) {
+            dispatch(CategoryDetail(id)).then((response) => {
+                console.log("Response2", response)
+            })
+        }
+    }, [id])
     return (
         <div className={styles.main}>
             {IsLoading && <div className="spinnerContainer">
