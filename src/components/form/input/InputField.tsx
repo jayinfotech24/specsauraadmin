@@ -40,7 +40,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     }
 
     return (
-      <div className="relative h-12">
+      <div className="relative h-16">
         <input
           ref={ref}
           type={type}

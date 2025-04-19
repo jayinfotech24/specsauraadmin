@@ -1,42 +1,41 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import ComponentCard from "../../common/ComponentCard";
 import Radio from "../input/Radio";
+import { FieldError, UseFormRegisterReturn } from "react-hook-form";
 
-export default function RadioButtons() {
-  const [selectedValue, setSelectedValue] = useState<string>("option2");
+interface RadioButtonsProps {
+  title: string;
+  name: string;
+  options: { label: string; value: string }[];
+  register: UseFormRegisterReturn;
+  error?: boolean;
+  hint?: string;
+}
 
-  const handleRadioChange = (value: string) => {
-    setSelectedValue(value);
-  };
+export default function RadioButtons({
+  title,
+  name,
+  options,
+  register,
+  error,
+  hint,
+}: RadioButtonsProps) {
   return (
-    <ComponentCard title="Radio Buttons">
+    <ComponentCard title={title}>
       <div className="flex flex-wrap items-center gap-8">
-        <Radio
-          id="radio1"
-          name="group1"
-          value="option1"
-          checked={selectedValue === "option1"}
-          onChange={handleRadioChange}
-          label="Default"
-        />
-        <Radio
-          id="radio2"
-          name="group1"
-          value="option2"
-          checked={selectedValue === "option2"}
-          onChange={handleRadioChange}
-          label="Selected"
-        />
-        <Radio
-          id="radio3"
-          name="group1"
-          value="option3"
-          checked={selectedValue === "option3"}
-          onChange={handleRadioChange}
-          label="Disabled"
-          disabled={true}
-        />
+        {options.map((option, index) => (
+         <Radio
+  key={index}
+  id={`${name}-${option.value}`}
+  value={option.value}
+  label={option.label}
+  error={error}
+  hint={index === options.length - 1 ? hint : undefined}
+  {...register}
+/>
+
+        ))}
       </div>
     </ComponentCard>
   );

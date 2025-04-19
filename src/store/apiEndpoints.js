@@ -3,6 +3,9 @@ const Appapis = {
     signIn: "/admin/login",
     addCategory: "/category",
     fileUpload: "/upload",
+    addProduct: "/product",
+    wallpaper: "/wallpaper",
+    video: "/video"
 }
 
 export default Appapis

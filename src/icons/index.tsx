@@ -11,6 +11,7 @@ import ArrowDownIcon from "./arrow-down.svg";
 import FolderIcon from "./folder.svg";
 import VideoIcon from "./videos.svg";
 import AudioIcon from "./audio.svg";
+import SqaureVideoIcon from "./square-play.svg"
 import GridIcon from "./grid.svg";
 import FileIcon from "./file.svg";
 import DownloadIcon from "./download.svg";
@@ -34,6 +35,7 @@ import UserIcon from "./user-line.svg";
 import CalenderIcon from "./calender-line.svg";
 import EyeIcon from "./eye.svg";
 import EyeCloseIcon from "./eye-close.svg";
+import ImageIcon from "./imageIcon.svg"
 import TimeIcon from "./time.svg";
 import CopyIcon from "./copy.svg";
 import ChevronLeftIcon from "./chevron-left.svg";
@@ -84,6 +86,7 @@ export {
   CloseLineIcon,
   ChevronDownIcon,
   PaperPlaneIcon,
+  SqaureVideoIcon,
   EnvelopeIcon,
   LockIcon,
   UserIcon,
@@ -106,4 +109,5 @@ export {
   HorizontaLDots,
   ChevronUpIcon,
   ChatIcon,
+  ImageIcon
 };

@@ -16,6 +16,9 @@ import {
   PlugInIcon,
   TableIcon,
   UserCircleIcon,
+  ImageIcon,
+  VideoIcon,
+  SqaureVideoIcon
 } from "../icons/index";
 import SidebarWidget from "./SidebarWidget";
 
@@ -56,7 +59,7 @@ const navItems: NavItem[] = [
    {
     name: "Category",
     icon: <ListIcon />,
-    subItems: [{ name: "Category", path: "/cat", pro: false }],
+    subItems: [{ name: "Add Category", path: "/cat", pro: false }],
   },
   {
     name: "Pages",
@@ -65,6 +68,21 @@ const navItems: NavItem[] = [
       { name: "Blank Page", path: "/blank", pro: false },
       { name: "404 Error", path: "/error-404", pro: false },
     ],
+  },
+   {
+    name: "Product",
+    icon: <ListIcon />,
+    subItems: [{ name: "Add Product", path: "/pro", pro: false }],
+  },
+    {
+    name: "Poster",
+    icon: <ImageIcon />,
+    subItems: [{ name: "Add Poster", path: "/poster", pro: false }],
+  },
+      {
+    name: "Video",
+    icon: <SqaureVideoIcon />,
+    subItems: [{ name: "Add Video", path: "/video", pro: false }],
   },
   {
     name: "demo",

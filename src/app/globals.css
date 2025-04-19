@@ -738,3 +738,48 @@ span.flatpickr-weekday,
   opacity: 0.8;
   cursor: grabbing; /* Changes the cursor to indicate dragging */
 }
+.spinnerContainer {
+  position: fixed; /* Use fixed to cover whole screen */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100vw;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.5); /* optional: translucent background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* Ensure it's above all other content */
+}
+.spinner {
+   width: 56px;
+   height: 56px;
+   display: grid;
+   border-radius: 50%;
+   -webkit-mask: radial-gradient(farthest-side,#0000 40%,#455eff 41%);
+   background: linear-gradient(0deg ,rgba(69,94,255,0.5) 50%,rgba(69,94,255,1) 0) center/4.5px 100%,
+        linear-gradient(90deg,rgba(69,94,255,0.25) 50%,rgba(69,94,255,0.75) 0) center/100% 4.5px;
+   background-repeat: no-repeat;
+   animation: spinner-d3o0rx 1s infinite steps(12);
+}
+
+.spinner::before,
+.spinner::after {
+   content: "";
+   grid-area: 1/1;
+   border-radius: 50%;
+   background: inherit;
+   opacity: 0.915;
+   transform: rotate(30deg);
+}
+
+.spinner::after {
+   opacity: 0.83;
+   transform: rotate(60deg);
+}
+
+@keyframes spinner-d3o0rx {
+   100% {
+      transform: rotate(1turn);
+   }
+}

@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
+  const [IsLoading, setIsLoading] = useState(false)
   const dispatch = useDispatch()
   const schema = Yup.object().shape({
     email: Yup.string().email("Please enter valid email.").required("Please enter your email."),
@@ -33,6 +34,7 @@ export default function SignInForm() {
     resolver: yupResolver(schema),
   });
   const submitHandler = (data) => {
+    setIsLoading(true)
     const jsonObject = {
 
       email: data.email,
@@ -45,12 +47,17 @@ export default function SignInForm() {
       if (response.payload.status == 200) {
         router.push("/")
         localStorage.setItem("authToken", response.payload.authToken)
+        setIsLoading(false)
       }
+      setIsLoading(false)
     })
   };
 
   return (
     <div className="flex flex-col flex-1 lg:w-1/2 w-full">
+      {IsLoading && <div className="spinnerContainer">
+        <div className="spinner"></div>
+      </div>}
       <div className="w-full max-w-md sm:pt-10 mx-auto mb-5">
         {/* <Link
           href="/"

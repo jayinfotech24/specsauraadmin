@@ -45,6 +45,50 @@ export const FileUpload = createAsyncThunk("api/upload", async (credentials, { r
     }
 
 })
+export const AddProduct = createAsyncThunk("api/addProduct", async (credentials, { rejectWithValue }) => {
+
+    try {
+        const response = await axiosInstance.post(`${Appapis.Basurl}${Appapis.addProduct}`, credentials)
+        return response.data
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+
+})
+export const GetCategory = createAsyncThunk("api/getCategory", async (credentials, { rejectWithValue }) => {
+
+    try {
+        const response = await axiosInstance.get(`${Appapis.Basurl}${Appapis.addCategory}`, credentials)
+        return response.data
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+
+})
+export const AddPoster = createAsyncThunk("api/addPoster", async (credentials, { rejectWithValue }) => {
+
+    try {
+        const response = await axiosInstance.post(`${Appapis.Basurl}${Appapis.wallpaper}`, credentials)
+        return response.data
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+
+})
+export const AddVideo = createAsyncThunk("api/addVideo", async (credentials, { rejectWithValue }) => {
+
+    try {
+        const response = await axiosInstance.post(`${Appapis.Basurl}${Appapis.video}`, credentials)
+        return response.data
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+
+})
 const AuthSlice = createSlice({
     name: "auth",
     initialState,
@@ -87,6 +131,54 @@ const AuthSlice = createSlice({
 
             })
             .addCase(FileUpload.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(AddProduct.pending, (state) => {
+                state.loading = true
+
+            })
+            .addCase(AddProduct.fulfilled, (state,) => {
+                state.loading = false;
+
+            })
+            .addCase(AddProduct.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(GetCategory.pending, (state) => {
+                state.loading = true
+
+            })
+            .addCase(GetCategory.fulfilled, (state,) => {
+                state.loading = false;
+
+            })
+            .addCase(GetCategory.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(AddPoster.pending, (state) => {
+                state.loading = true
+
+            })
+            .addCase(AddPoster.fulfilled, (state,) => {
+                state.loading = false;
+
+            })
+            .addCase(AddPoster.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(AddVideo.pending, (state) => {
+                state.loading = true
+
+            })
+            .addCase(AddVideo.fulfilled, (state,) => {
+                state.loading = false;
+
+            })
+            .addCase(AddVideo.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })
