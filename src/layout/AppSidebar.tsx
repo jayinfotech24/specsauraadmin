@@ -59,7 +59,9 @@ const navItems: NavItem[] = [
    {
     name: "Category",
     icon: <ListIcon />,
-    subItems: [{ name: "Add Category", path: "/cat", pro: false }],
+     subItems: [{ name: "Add Category", path: "/cat", pro: false }, 
+      { name: "Show Category", path: "/showcat", pro: false }
+    ],
   },
   {
     name: "Pages",
@@ -72,7 +74,9 @@ const navItems: NavItem[] = [
    {
     name: "Product",
     icon: <ListIcon />,
-    subItems: [{ name: "Add Product", path: "/pro", pro: false }],
+     subItems: [{ name: "Add Product", path: "/pro", pro: false },
+      
+    ],
   },
     {
     name: "Poster",
