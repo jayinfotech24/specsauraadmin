@@ -12,6 +12,8 @@ import * as Yup from "yup";
 import { useDispatch } from "react-redux";
 import { Login } from "@/store/authSlice";
 import { useRouter } from "next/navigation";
+import toast, { Toaster } from "react-hot-toast"
+
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
@@ -45,6 +47,7 @@ export default function SignInForm() {
     dispatch(Login(jsonObject)).then((response) => {
       console.log("res", response)
       if (response.payload.status == 200) {
+        toast.success("SignIn successfully.")
         router.push("/")
         localStorage.setItem("authToken", response.payload.authToken)
         setIsLoading(false)
@@ -55,6 +58,10 @@ export default function SignInForm() {
 
   return (
     <div className="flex flex-col flex-1 lg:w-1/2 w-full">
+      <Toaster
+        position="top-center"
+        reverseOrder={false}
+      />
       {IsLoading && <div className="spinnerContainer">
         <div className="spinner"></div>
       </div>}

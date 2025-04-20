@@ -5,7 +5,7 @@ import DropzoneComponent from "@/components/form/form-elements/DropZone";
 import FileInputExample from "@/components/form/form-elements/FileInputExample";
 import InputGroup from "@/components/form/form-elements/InputGroup";
 import InputStates from "@/components/form/form-elements/InputStates";
-import RadioButtons from "@/components/form/form-elements/RadioButtons";
+
 import SelectInputs from "@/components/form/form-elements/SelectInputs";
 import TextAreaInput from "@/components/form/form-elements/TextAreaInput";
 import ToggleSwitch from "@/components/form/form-elements/ToggleSwitch";
@@ -33,7 +33,7 @@ export default function FormElements() {
           <InputGroup />
           <FileInputExample />
           <CheckboxComponents />
-          <RadioButtons />
+          {/* <RadioButtons /> */}
           <ToggleSwitch />
           <DropzoneComponent />
         </div>

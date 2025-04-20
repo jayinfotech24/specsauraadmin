@@ -2,7 +2,7 @@
 import React from "react";
 import ComponentCard from "../../common/ComponentCard";
 import Radio from "../input/Radio";
-import { FieldError, UseFormRegisterReturn } from "react-hook-form";
+import {  UseFormRegisterReturn } from "react-hook-form";
 
 interface RadioButtonsProps {
   title: string;

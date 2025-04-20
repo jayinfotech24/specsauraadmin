@@ -1,6 +1,6 @@
 "use client";
 import Input from '@/components/form/input/InputField'
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import styles from "../../../../../styles/category.module.css"
 import Label from '@/components/form/Label'
 import ComponentCard from '@/components/common/ComponentCard'
@@ -11,9 +11,10 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
 import { useDispatch } from 'react-redux';
-import { AddCategory, CategoryDetail, FileUpload } from '@/store/authSlice';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { AddCategory, FileUpload } from '@/store/authSlice';
+
 export default function Index() {
+
     const [FileUrl, setFileUrl] = useState(null)
     const dispatch = useDispatch()
     const [IsLoading, setIsLoding] = useState(false)
@@ -37,8 +38,7 @@ export default function Index() {
     });
 
 
-    const searchParams = useSearchParams();
-    const id = searchParams.get("id");
+
 
 
     const {
@@ -50,7 +50,7 @@ export default function Index() {
     });
     const submitHandler = (data) => {
         setIsLoding(true)
-        const formData = new FormData();
+
         const jsonObject = {
             url: FileUrl,
             title: data.name,
@@ -61,18 +61,13 @@ export default function Index() {
             console.log("Res", response)
             if (response.payload.status == 200) {
                 setIsLoding(false)
+
             }
             setIsLoding(false)
         })
     };
 
-    useEffect(() => {
-        if (id) {
-            dispatch(CategoryDetail(id)).then((response) => {
-                console.log("Response2", response)
-            })
-        }
-    }, [id])
+
     return (
         <div className={styles.main}>
             {IsLoading && <div className="spinnerContainer">

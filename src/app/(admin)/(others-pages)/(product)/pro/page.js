@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import Input from '@/components/form/input/InputField'
 import { useState } from 'react'
 import styles from "../../../../../styles/product.module.css"
@@ -13,13 +13,13 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
 import { useDispatch } from 'react-redux';
-import { AddCategory, AddProduct, FileUpload, GetCategory } from '@/store/authSlice';
-import SelectInputs from '@/components/form/form-elements/SelectInputs'
+import { AddProduct, FileUpload, GetCategory } from '@/store/authSlice';
+
 import Select from '@/components/form/Select'
 import { ChevronDownIcon } from '@/icons'
-import Checkbox from '@/components/form/input/Checkbox'
+
 import RadioButtons from '@/components/form/form-elements/RadioButtons'
-export default function page() {
+export default function Page() {
     const schema = Yup.object().shape({
         name: Yup.string().required("Please enter product name."),
         color: Yup.string().required("Please enter color."),
@@ -106,7 +106,7 @@ export default function page() {
 
 
 
-    const GetCategoryList = () => {
+    const GetCategoryList = useCallback(() => {
         dispatch(GetCategory()).then((response) => {
             console.log("ResponseCategory", response)
             if (response.payload.status == 200) {
@@ -119,12 +119,12 @@ export default function page() {
                 setOptions(Options)
             }
         })
-    }
+    }, [dispatch])
 
 
     useEffect(() => {
         GetCategoryList()
-    }, [])
+    }, [GetCategoryList])
     const {
         register,
         setValue,

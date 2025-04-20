@@ -11,7 +11,7 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
 import { useDispatch } from 'react-redux';
-import { AddCategory, AddPoster, FileUpload } from '@/store/authSlice';
+import { AddPoster, FileUpload } from '@/store/authSlice';
 export default function Index() {
     const [FileUrl, setFileUrl] = useState(null)
     const dispatch = useDispatch()

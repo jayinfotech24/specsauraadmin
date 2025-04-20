@@ -4,14 +4,14 @@ import React, { useState } from 'react'
 import styles from "../../../../../styles/poster.module.css"
 import Label from '@/components/form/Label'
 import ComponentCard from '@/components/common/ComponentCard'
-import TextArea from '@/components/form/input/TextArea'
+
 
 import FileInput from '@/components/form/input/FileInput';
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
 import { useDispatch } from 'react-redux';
-import { AddCategory, AddPoster, AddVideo, FileUpload } from '@/store/authSlice';
+import { AddVideo, FileUpload } from '@/store/authSlice';
 export default function Index() {
     const [FileUrl, setFileUrl] = useState(null)
     const dispatch = useDispatch()

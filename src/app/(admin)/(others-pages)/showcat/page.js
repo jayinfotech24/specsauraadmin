@@ -1,9 +1,9 @@
 "use client"
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 
-import Badge from "@/components/ui/badge/Badge";
+
 import Image from "next/image";
 import {
     Table, TableBody,
@@ -12,7 +12,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { useDispatch } from "react-redux";
-import { CategoryDetail, GetCategory } from "@/store/authSlice";
+import { GetCategory } from "@/store/authSlice";
 import { useRouter } from "next/navigation";
 import Button from "@/components/ui/button/Button";
 
@@ -43,17 +43,17 @@ export default function BasicTableOne() {
     const router = useRouter()
     const dispatch = useDispatch()
     const [Data, setData] = useState([])
-    const GetCategoryData = () => {
+    const GetCategoryData = useCallback(() => {
         dispatch(GetCategory()).then((response) => {
             console.log("Res", response);
             if (response.payload.status == 200) {
                 setData(response.payload.items)
             }
         })
-    }
+    }, [dispatch])
     useEffect(() => {
         GetCategoryData()
-    }, [])
+    }, [GetCategoryData])
 
     return (
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">

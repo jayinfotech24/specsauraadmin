@@ -17,7 +17,7 @@ import {
   TableIcon,
   UserCircleIcon,
   ImageIcon,
-  VideoIcon,
+
   SqaureVideoIcon
 } from "../icons/index";
 import SidebarWidget from "./SidebarWidget";
