@@ -12,7 +12,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { useDispatch } from "react-redux";
-import { GetCategory } from "@/store/authSlice";
+import { GetProductDetail } from "@/store/authSlice";
 import { useRouter } from "next/navigation";
 import Button from "@/components/ui/button/Button";
 
@@ -44,10 +44,10 @@ export default function BasicTableOne() {
     const dispatch = useDispatch()
     const [Data, setData] = useState([])
     const GetCategoryData = useCallback(() => {
-        dispatch(GetCategory()).then((response) => {
+        dispatch(GetProductDetail()).then((response) => {
             console.log("Res", response);
             if (response.payload.status == 200) {
-                setData(response.payload.items)
+                setData(response.payload.products)
             }
         })
     }, [dispatch])
@@ -65,15 +65,42 @@ export default function BasicTableOne() {
                             <TableRow>
                                 <TableCell
                                     isHeader
-                                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                                    className="px-2 py-1 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                                 >
                                     Category
                                 </TableCell>
                                 <TableCell
                                     isHeader
-                                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                                    className="px-2 py-1 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                                 >
-                                    Category Name
+                                    Gender
+                                </TableCell>
+                                <TableCell
+                                    isHeader
+                                    className="px-2 py-1 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                                >
+                                    totalItems
+                                </TableCell>
+                                <TableCell
+                                    isHeader
+                                    className="px-2 py-1 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                                >
+                                    availableItems
+
+                                </TableCell>
+                                <TableCell
+                                    isHeader
+                                    className="px-2 py-1 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                                >
+                                    frameWidth
+
+                                </TableCell>
+                                <TableCell
+                                    isHeader
+                                    className="px-2 py-1 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                                >
+                                    frameHeight
+
                                 </TableCell>
                                 {/* <TableCell
                                     isHeader
@@ -89,7 +116,7 @@ export default function BasicTableOne() {
                                 </TableCell> */}
                                 <TableCell
                                     isHeader
-                                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                                    className="px-2 py-1 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                                 >
                                     Action
                                 </TableCell>
@@ -99,31 +126,46 @@ export default function BasicTableOne() {
 
                         {/* Table Body */}
                         <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-                            {Data.map((category) => (
-                                <TableRow key={category._id}>
+                            {Data.map((product) => (
+                                <TableRow key={product._id}>
                                     <TableCell className="px-5 py-4 sm:px-6 text-start">
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 overflow-hidden rounded-full">
                                                 <Image
-                                                    alt={category.title}
+                                                    alt={product.name}
                                                     width={40}
                                                     height={40}
-                                                    src={category.url}
+                                                    src={product.url}
 
                                                 />
                                             </div>
                                             <div>
-                                                {/* <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                                                    {order.user.name}
+                                                <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                                                    {product.name}
                                                 </span>
                                                 <span className="block text-gray-500 text-theme-xs dark:text-gray-400">
-                                                    {order.user.role}
-                                                </span> */}
+                                                    {`${product.price} ₹`}
+                                                </span>
                                             </div>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                        {category.title}
+                                    <TableCell className="px-2 py-1 text-gray-500 text-start  text-theme-sm dark:text-gray-400">
+                                        {product.gender}
+                                    </TableCell>
+                                    <TableCell className="px-2 py-1 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                        {product.totalItems}
+                                    </TableCell>
+                                    <TableCell className="px-2 py-1 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                        {product.availableItems
+                                        }
+                                    </TableCell>
+                                    <TableCell className="px-2 py-1 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                        {product.frameWidth
+                                        }
+                                    </TableCell>
+                                    <TableCell className="px-2 py-1 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                        {product.frameHeight
+                                        }
                                     </TableCell>
                                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                                         {/* <div className="flex -space-x-2">
@@ -143,7 +185,7 @@ export default function BasicTableOne() {
                                             ))}
                                         </div> */}
 
-                                        <Button size="sm" variant="primary" onClick={() => router.push(`/cat/?id=${category._id}`)} >
+                                        <Button size="sm" variant="primary" onClick={() => router.push(`/pro/?id=${product._id}`)} >
                                             Update
                                         </Button>
                                         {/* <Badge

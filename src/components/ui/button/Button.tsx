@@ -13,7 +13,7 @@ interface ButtonProps {
 
 const Button: React.FC<ButtonProps> = ({
   children,
-  size = "md",
+  size = "sm",
   variant = "primary",
   startIcon,
   endIcon,
@@ -23,7 +23,7 @@ const Button: React.FC<ButtonProps> = ({
 }) => {
   // Size Classes
   const sizeClasses = {
-    sm: "px-4 py-3 text-sm",
+    sm: "px-2 py-1 text-sm",
     md: "px-5 py-3.5 text-sm",
   };
 
@@ -37,7 +37,7 @@ const Button: React.FC<ButtonProps> = ({
 
   return (
     <button
-      className={`inline-flex items-center justify-center font-medium gap-2 rounded-lg transition ${className} ${
+      className={`inline-flex items-center justify-center font-medium gap-2 rounded-sm transition ${className} ${
         sizeClasses[size]
       } ${variantClasses[variant]} ${
         disabled ? "cursor-not-allowed opacity-50" : ""

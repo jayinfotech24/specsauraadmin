@@ -90,7 +90,7 @@ export const AddVideo = createAsyncThunk("api/addVideo", async (credentials, { r
 
 })
 export const CategoryDetail = createAsyncThunk(
-    "api/productDetail",
+    "api/categoryDetail",
     async (id, { rejectWithValue }) => {
         try {
             const response = await axiosInstance.get(`${Appapis.Basurl}${Appapis.categoryDetail(id)}`);
@@ -100,6 +100,29 @@ export const CategoryDetail = createAsyncThunk(
         }
     }
 );
+export const GetProductDetail = createAsyncThunk("api/getProductDetail", async (credentials, { rejectWithValue }) => {
+
+    try {
+        const response = await axiosInstance.get(`${Appapis.Basurl}${Appapis.allProduct}`, credentials)
+        return response.data
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+
+})
+export const ProductById = createAsyncThunk(
+    "api/productById",
+    async (id, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.get(`${Appapis.Basurl}${Appapis.productDetail(id)}`);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data || "Something went wrong");
+        }
+    }
+);
+
 const AuthSlice = createSlice({
     name: "auth",
     initialState,
@@ -202,6 +225,30 @@ const AuthSlice = createSlice({
 
             })
             .addCase(CategoryDetail.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(GetProductDetail.pending, (state) => {
+                state.loading = true
+
+            })
+            .addCase(GetProductDetail.fulfilled, (state,) => {
+                state.loading = false;
+
+            })
+            .addCase(GetProductDetail.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(ProductById.pending, (state) => {
+                state.loading = true
+
+            })
+            .addCase(ProductById.fulfilled, (state,) => {
+                state.loading = false;
+
+            })
+            .addCase(ProductById.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })

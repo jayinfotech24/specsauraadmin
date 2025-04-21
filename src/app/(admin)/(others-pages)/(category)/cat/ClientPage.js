@@ -1,0 +1,147 @@
+"use client";
+import Input from '@/components/form/input/InputField'
+import React, { useCallback, useEffect, useState } from 'react'
+import styles from "../../../../../styles/category.module.css"
+import Label from '@/components/form/Label'
+import ComponentCard from '@/components/common/ComponentCard'
+import TextArea from '@/components/form/input/TextArea'
+
+import FileInput from '@/components/form/input/FileInput';
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as Yup from "yup";
+import { useDispatch } from 'react-redux';
+import { AddCategory, CategoryDetail, FileUpload } from '@/store/authSlice';
+import { useSearchParams } from 'next/navigation';
+
+export default function Index() {
+
+    const [FileUrl, setFileUrl] = useState(null)
+    const dispatch = useDispatch()
+    const [IsLoading, setIsLoding] = useState(false)
+    const [Url, setUrl] = useState(null)
+
+
+    const searchParams = useSearchParams();
+    const id = searchParams.get('id'); // Safe to call directly
+    const handleFileChange = (event) => {
+        const file = event.target.files?.[0];
+        console.log("File", file)
+        const formData = new FormData()
+        if (file) {
+            const uniqueFilename = Date.now() + "-" + file.name;
+            formData.append("file", file, uniqueFilename);
+            dispatch(FileUpload(formData)).then((response) => {
+                console.log("Response", response.payload)
+                setUrl(response.payload.fileUrl)
+                setFileUrl(response.payload.fileUrl)
+            })
+        }
+    };
+
+    const schema = Yup.object().shape({
+        name: Yup.string().required("Name is required").min(3, "Name must be at least 3 characters"),
+        description: Yup.string().required("Description is required"),
+    });
+
+
+
+
+
+    const {
+        register,
+        handleSubmit,
+        setValue,
+        formState: { errors },
+    } = useForm({
+        resolver: yupResolver(schema),
+    });
+    const submitHandler = (data) => {
+        setIsLoding(true)
+
+        const jsonObject = {
+            url: FileUrl,
+            title: data.name,
+            description: data.description
+        }
+
+        dispatch(AddCategory(jsonObject)).then((response) => {
+            console.log("Res", response)
+            if (response.payload.status == 200) {
+                setIsLoding(false)
+
+            }
+            setIsLoding(false)
+        })
+    };
+
+
+    const GetCategoryById = useCallback((id) => {
+        dispatch(CategoryDetail(id)).then((response) => {
+            console.log("Responsonse", response)
+            if (response.payload) {
+                setValue("name", response.payload.title)
+
+                setValue("description", response.payload.description)
+                setUrl(response.payload.url)
+            }
+        })
+    }, [dispatch, setValue])
+
+    useEffect(() => {
+        if (id) {
+            GetCategoryById(id)
+        }
+    }, [GetCategoryById, id])
+    return (
+        <div className={styles.main}>
+            {IsLoading && <div className="spinnerContainer">
+                <div className="spinner"></div>
+            </div>}
+            <div className={styles.inner}>
+                <form onSubmit={handleSubmit(submitHandler)}>
+
+
+                    <ComponentCard title="Add Category" className={styles.form}>
+
+                        <div>
+                            <Label>Name</Label>
+                            <Input type="text"
+                                {...register("name")}
+                                error={!!errors.name}
+                                hint={errors.name?.message}
+                            />
+                        </div>
+                        <div>
+                            <Label>Description</Label>
+                            <TextArea  {...register("description")}
+                                error={!!errors.description}
+                                hint={errors.description?.message} rows={6} />
+                        </div>
+
+                        <div>
+                            <Label>Upload file</Label>
+                            <FileInput onChange={handleFileChange} className="custom-class" />
+                        </div>
+
+                        {
+                            Url != null && (
+                                <div className={styles.imageContainer}>
+                                    <div className={styles.imageWrapper}>
+                                        <img alt="name" src={Url} />
+
+                                    </div>
+
+                                </div>
+                            )
+                        }
+                        <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-md">
+                            Submit
+                        </button>
+
+                    </ComponentCard>
+                </form>
+            </div>
+        </div>
+    )
+}
