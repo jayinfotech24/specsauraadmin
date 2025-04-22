@@ -55,10 +55,13 @@ export default function Page() {
 
     const [FileUrls, setFileUrls] = useState([]);
     const [MainUrl, setMainUrl] = useState(null)
+    const [Url , setUrl] = useState(null)
     const [OptionsList, setOptions] = useState([])
     const [IsLoading, setIsLoading] = useState(false)
     const dispatch = useDispatch()
     const searchParams = useSearchParams();
+   
+    
     const id = searchParams.get('id'); // Safe to call directly
     const handleFileChange = async (event) => {
         const files = event.target.files;
@@ -108,15 +111,42 @@ export default function Page() {
 
     const GetProductById = useCallback(() => {
         dispatch(ProductById(id)).then((response) => {
-            console.log("Responsonse", response)
+            console.log("Response", response)
             if (response.payload) {
-                // setValue("name", response.payload.title)
-
-                // setValue("description", response.payload.description)
-                // setUrl(response.payload.url)
+                const product = response.payload.product;
+    
+                setValue("name", product.name || "");
+                setValue("description", product.description || "");
+                setValue("color", product.color || "");
+                setValue("price", product.price || "");
+                setValue("totalItems", product.totalItems || "");
+                setValue("availableItems", product.availableItems || "");
+                setValue("brandName", product.brandName || "");
+                setValue("modelNo", product.modelNo || "");
+                setValue("productID", product.productID || "");
+                setValue("frameWidth", product.frameWidth || "");
+                setValue("frameHeight", product.frameHeight || "");
+                setValue("frameDimention", product.frameDimention || "");
+                setValue("frameColor", product.frameColor || "");
+                setValue("lensColor", product.lensColor || "");
+                setValue("templeColor", product.templeColor || "");
+                setValue("frameMaterial", product.frameMaterial || "");
+                setValue("lens", product.lens || "");
+                setValue("powerSunglasses", product.powerSunglasses ? "true" : "false"); // convert boolean to string if needed
+                setValue("gender", product.gender || "");
+                setValue("warranty", product.warranty || "");
+                setValue("category", product.category?._id || "");
+                
+                // Assuming 'url' is a separate setter not using `setValue`
+                setUrl(product.url || "");
+    
+                // Assuming image and file uploads are handled separately
+                setValue("image", product.url || ""); // placeholder
+                setValue("file", product.url || "");  // placeholder
             }
-        })
-    }, [])
+        });
+    }, []);
+    
     useEffect(() => {
         GetProductById()
     }, [GetProductById])
@@ -421,6 +451,17 @@ export default function Page() {
                                         multiple
                                     />
                                 </div>
+                                {
+                            Url != null && (
+                                <div className={styles.imageContainer}>
+                                    <div className={styles.imageWrapper}>
+                                        <img alt="name" src={Url} />
+
+                                    </div>
+
+                                </div>
+                            )
+                        }
 
                                 <div>
                                     <Label>Upload Images</Label>

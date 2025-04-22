@@ -79,6 +79,14 @@ const navItems: NavItem[] = [
       
     ],
   },
+  {
+    name: "Order",
+    icon: <ListIcon />,
+     subItems: [{ name: "Add order", path: "/addOrder", pro: false },
+          
+      
+    ],
+  },
     {
     name: "Poster",
     icon: <ImageIcon />,
