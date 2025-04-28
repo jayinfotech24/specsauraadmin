@@ -122,6 +122,29 @@ export const ProductById = createAsyncThunk(
         }
     }
 );
+export const UpdateCategoryId = createAsyncThunk(
+    "api/UpdateCatById",
+    async ({ id, data }, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.patch(`${Appapis.Basurl}${Appapis.updateCategory(id)}`, data);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data || "Something went wrong");
+        }
+    }
+);
+export const UpdateProductById = createAsyncThunk(
+    "api/UpdateProductById",
+    async ({ id, data }, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.patch(`${Appapis.Basurl}${Appapis.updateProductDetail(id)}`, data);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data || "Something went wrong");
+        }
+    }
+);
+
 
 const AuthSlice = createSlice({
     name: "auth",
@@ -249,6 +272,30 @@ const AuthSlice = createSlice({
 
             })
             .addCase(ProductById.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(UpdateCategoryId.pending, (state) => {
+                state.loading = true
+
+            })
+            .addCase(UpdateCategoryId.fulfilled, (state,) => {
+                state.loading = false;
+
+            })
+            .addCase(UpdateCategoryId.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(UpdateProductById.pending, (state) => {
+                state.loading = true
+
+            })
+            .addCase(UpdateProductById.fulfilled, (state,) => {
+                state.loading = false;
+
+            })
+            .addCase(UpdateProductById.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })

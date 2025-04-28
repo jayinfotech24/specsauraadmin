@@ -11,8 +11,9 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
 import { useDispatch } from 'react-redux';
-import { AddCategory, CategoryDetail, FileUpload } from '@/store/authSlice';
+import { AddCategory, CategoryDetail, FileUpload, UpdateCategoryId } from '@/store/authSlice';
 import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 export default function Index() {
 
@@ -20,7 +21,7 @@ export default function Index() {
     const dispatch = useDispatch()
     const [IsLoading, setIsLoding] = useState(false)
     const [Url, setUrl] = useState(null)
-
+    const router = useRouter()
 
     const searchParams = useSearchParams();
     const id = searchParams.get('id'); // Safe to call directly
@@ -56,6 +57,7 @@ export default function Index() {
     } = useForm({
         resolver: yupResolver(schema),
     });
+
     const submitHandler = (data) => {
         setIsLoding(true)
 
@@ -64,15 +66,29 @@ export default function Index() {
             title: data.name,
             description: data.description
         }
-
-        dispatch(AddCategory(jsonObject)).then((response) => {
-            console.log("Res", response)
-            if (response.payload.status == 200) {
-                setIsLoding(false)
-
+        console.log("Object", jsonObject)
+        if (id) {
+            if (id) {
+                dispatch(UpdateCategoryId({ id, data: jsonObject })).then((response) => {
+                    console.log("ResU", response);
+                    if (response.payload.status === 200) {
+                        router.push("/showcat");
+                    }
+                });
             }
-            setIsLoding(false)
-        })
+
+        } else {
+            dispatch(AddCategory(jsonObject)).then((response) => {
+                console.log("Res", response)
+                if (response.payload.status == 200) {
+                    setIsLoding(false)
+
+                }
+                setIsLoding(false)
+            })
+        }
+
+
     };
 
 

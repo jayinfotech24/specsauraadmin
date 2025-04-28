@@ -13,7 +13,7 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
 import { useDispatch } from 'react-redux';
-import { AddProduct, FileUpload, GetCategory } from '@/store/authSlice';
+import { AddProduct, FileUpload, GetCategory, UpdateProductById } from '@/store/authSlice';
 
 import Select from '@/components/form/Select'
 import { ChevronDownIcon } from '@/icons'
@@ -59,6 +59,14 @@ export default function Page() {
     const [IsLoading, setIsLoading] = useState(false)
     const dispatch = useDispatch()
     const searchParams = useSearchParams();
+    const {
+        register,
+        setValue,
+        handleSubmit,
+        formState: { errors },
+    } = useForm({
+        resolver: yupResolver(schema)
+    });
     const id = searchParams.get('id'); // Safe to call directly
     const handleFileChange = async (event) => {
         const files = event.target.files;
@@ -110,16 +118,54 @@ export default function Page() {
         dispatch(ProductById(id)).then((response) => {
             console.log("Responsonse", response)
             if (response.payload) {
-                // setValue("name", response.payload.title)
+                const data = response.payload.product;
 
-                // setValue("description", response.payload.description)
-                // setUrl(response.payload.url)
+                setValue("name", data.name || "");
+                setValue("color", data.color || "");
+                setValue("price", data.price || 0);
+                setValue("totalItems", data.totalItems || 0);
+                setValue("availableItems", data.availableItems || 0);
+                setValue("description", data.description || "");
+                setValue("brandName", data.brandName || "");
+                setValue("modelNo", data.modelNo || "");
+                setValue("productID", data.productID || "");
+                setValue("frameWidth", data.frameWidth || "");
+                setValue("frameHeight", data.frameHeight || "");
+                setValue("frameDimention", data.frameDimention || "");
+                setValue("frameColor", data.frameColor || "");
+                setValue("lensColor", data.lensColor || "");
+                setValue("templeColor", data.templeColor || "");
+                setValue("frameMaterial", data.frameMaterial || "");
+                setValue("lens", data.lens || "");
+                setValue("powerSunglasses", data.powerSunglasses || false);
+                setValue("gender", data.gender || "Unisex");
+                setValue("warranty", data.warranty || "");
+                setFileUrls(data.images);
+
+                // For category (pick _id)
+                if (data.category?._id) {
+                    setValue("category", data.category._id);
+                }
+
+                // For main image URL
+                if (data.url) {
+                    setMainUrl(data.url);
+                }
+
+                // For multiple images
+                if (data.images && Array.isArray(data.images)) {
+                    setFileUrls(data.images);
+                }
             }
-        })
-    }, [])
+        });
+    }, [dispatch, id, setValue]);
+
     useEffect(() => {
-        GetProductById()
-    }, [GetProductById])
+        if (id) {
+            GetProductById()
+        }
+
+    }, [GetProductById, id])
 
     const GetCategoryList = useCallback(() => {
         dispatch(GetCategory()).then((response) => {
@@ -140,14 +186,7 @@ export default function Page() {
     useEffect(() => {
         GetCategoryList()
     }, [GetCategoryList])
-    const {
-        register,
-        setValue,
-        handleSubmit,
-        formState: { errors },
-    } = useForm({
-        resolver: yupResolver(schema)
-    });
+
     const handleSelectChange = (value) => {
         setValue("category", value, {
             shouldValidate: true,
@@ -165,7 +204,7 @@ export default function Page() {
     const submitHandler = async (data) => {
         setIsLoading(true)
         const jsonObject = {
-            name: data.name,
+            name: data?.name,
             color: data.color,
             category: data.category,
             price: data.price,
@@ -191,13 +230,23 @@ export default function Page() {
         };
 
 
-        dispatch(AddProduct(jsonObject)).then((response) => {
-            console.log("res", response)
-            setIsLoading(false)
-        }).catch((error) => {
-            console.log("EE", error)
-            setIsLoading(false)
-        })
+        if (id) {
+            dispatch(UpdateProductById({ id, data: jsonObject })).then((response) => {
+                console.log("ResU", response);
+                if (response.payload.status === 200) {
+                    router.push("/showcat");
+                }
+            });
+        } else {
+            dispatch(AddProduct(jsonObject)).then((response) => {
+                console.log("res", response)
+                setIsLoading(false)
+            }).catch((error) => {
+                console.log("EE", error)
+                setIsLoading(false)
+            })
+        }
+
     }
 
 
@@ -421,6 +470,19 @@ export default function Page() {
                                         multiple
                                     />
                                 </div>
+                                {
+                                    MainUrl != null &&
+                                    (
+                                        <div className={styles.imageContainer}>
+                                            <div className={styles.imageWrapper}>
+                                                <img alt="name" src={MainUrl} />
+
+                                            </div>
+
+                                        </div>
+
+                                    )
+                                }
 
                                 <div>
                                     <Label>Upload Images</Label>
@@ -430,6 +492,27 @@ export default function Page() {
                                         hint={errors.file?.message}
                                         multiple
                                     />
+                                </div>
+                                <div className={styles.containerWrapper}>
+
+                                    {
+
+                                        FileUrls?.length > 0 &&
+                                        FileUrls?.map((item, index) => {
+                                            return (
+
+                                                <div key={index} className={styles.imageContainer}>
+                                                    <div className={styles.imageWrapper}>
+                                                        <img alt="name" src={item} />
+
+                                                    </div>
+
+                                                </div>
+
+
+                                            )
+                                        })
+                                    }
                                 </div>
                             </div>
 

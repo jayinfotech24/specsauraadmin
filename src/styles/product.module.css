@@ -59,6 +59,16 @@
 .devide .left{
     width: 50%;
 }
+.containerWrapper{
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    align-items: start;
+    gap: 10px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+
+}
 .imageContainer{
 width: 50px;
     height: 50px;
