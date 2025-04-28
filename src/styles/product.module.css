@@ -93,3 +93,28 @@ width: 50px;
     width: 100%;
     object-fit: contain;
 }
+.imageContainer{
+    width: 50px;
+        height: 50px;
+        border-radius: 5x;
+        display: flex
+    ;
+        justify-content: center;
+        align-items: center;
+        
+    margin-top: 20px;
+    margin-bottom: 20px;
+    }
+    .imageContainer .imageWrapper{
+        width: 30px;
+        height: 30px;
+        border-radius: 7px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+    }
+    .imageContainer .imageWrapper img{
+        width: 100%;
+        object-fit: contain;
+    }

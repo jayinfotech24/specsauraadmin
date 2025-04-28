@@ -55,18 +55,13 @@ export default function Page() {
 
     const [FileUrls, setFileUrls] = useState([]);
     const [MainUrl, setMainUrl] = useState(null)
+    const [Url, setUrl] = useState(null)
     const [OptionsList, setOptions] = useState([])
     const [IsLoading, setIsLoading] = useState(false)
     const dispatch = useDispatch()
     const searchParams = useSearchParams();
-    const {
-        register,
-        setValue,
-        handleSubmit,
-        formState: { errors },
-    } = useForm({
-        resolver: yupResolver(schema)
-    });
+
+
     const id = searchParams.get('id'); // Safe to call directly
     const handleFileChange = async (event) => {
         const files = event.target.files;
@@ -116,8 +111,9 @@ export default function Page() {
 
     const GetProductById = useCallback(() => {
         dispatch(ProductById(id)).then((response) => {
-            console.log("Responsonse", response)
+            console.log("Response", response)
             if (response.payload) {
+
                 const data = response.payload.product;
 
                 setValue("name", data.name || "");
@@ -159,6 +155,7 @@ export default function Page() {
             }
         });
     }, [dispatch, id, setValue]);
+
 
     useEffect(() => {
         if (id) {
@@ -471,6 +468,7 @@ export default function Page() {
                                     />
                                 </div>
                                 {
+
                                     MainUrl != null &&
                                     (
                                         <div className={styles.imageContainer}>
