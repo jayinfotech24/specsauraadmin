@@ -7,7 +7,7 @@ interface FileInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   hint?: string;
 }
 
-const  FileInput: FC<FileInputProps> = ({
+const FileInput: FC<FileInputProps> = ({
   className = "",
   onChange,
   success = false,
@@ -37,14 +37,13 @@ const  FileInput: FC<FileInputProps> = ({
         type="file"
         className={inputClasses}
         onChange={onChange}
-     
+
         {...rest}
       />
       {hint && (
         <p
-          className={`mt-1 text-xs ${
-            error ? "text-error-500" : success ? "text-success-500" : "text-gray-500 dark:text-gray-400"
-          }`}
+          className={`mt-1 text-xs ${error ? "text-error-500" : success ? "text-success-500" : "text-gray-500 dark:text-gray-400"
+            }`}
         >
           {hint}
         </p>

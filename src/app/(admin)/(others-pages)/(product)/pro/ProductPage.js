@@ -20,6 +20,7 @@ import { ChevronDownIcon } from '@/icons'
 import { ProductById } from "../../../../../store/authSlice"
 import RadioButtons from '@/components/form/form-elements/RadioButtons'
 import { useSearchParams } from 'next/navigation'
+import Image from 'next/image';
 export default function Page() {
     const schema = Yup.object().shape({
         name: Yup.string().required("Please enter product name."),
@@ -43,19 +44,23 @@ export default function Page() {
         powerSunglasses: Yup.string().required("Please enter power sunglasses info."),
         gender: Yup.string().required("Please enter gender."),
         warranty: Yup.string().required("Please enter warranty information."),
-        file: Yup
-            .mixed()
-            .required("Please upload a images."),
-        image: Yup
-            .mixed()
-            .required("Please upload a image."),
+        file: Yup.mixed().when('$id', {
+            is: (id) => !id, // When there is no id (creating new)
+            then: (schema) => schema.required("Please upload product images"), // Apply validation
+            otherwise: (schema) => schema.notRequired(), // No validation when updating
+        }),
+        image: Yup.mixed().when('$id', {
+            is: (id) => !id, // When there is no id (creating new)
+            then: (schema) => schema.required("Please upload a main product image"), // Apply validation
+            otherwise: (schema) => schema.notRequired(), // No validation when updating
+        }),
     });
 
 
 
     const [FileUrls, setFileUrls] = useState([]);
     const [MainUrl, setMainUrl] = useState(null)
-    const [Url, setUrl] = useState(null)
+
     const [OptionsList, setOptions] = useState([])
     const [IsLoading, setIsLoading] = useState(false)
     const dispatch = useDispatch()
@@ -63,6 +68,15 @@ export default function Page() {
 
 
     const id = searchParams.get('id'); // Safe to call directly
+    const {
+        register,
+        handleSubmit,
+        setValue,
+        formState: { errors },
+    } = useForm({
+        resolver: yupResolver(schema),
+        context: { id } // Pass the id to the validation context
+    });
     const handleFileChange = async (event) => {
         const files = event.target.files;
         const uploadedUrls = [];
@@ -74,9 +88,7 @@ export default function Page() {
             formData.append("file", file, uniqueFilename);
 
             try {
-                // Use await here to wait for the file upload response before moving to the next one
                 const response = await dispatch(FileUpload(formData)).unwrap();
-
                 if (response?.fileUrl) {
                     uploadedUrls.push(response.fileUrl);
                 }
@@ -85,26 +97,26 @@ export default function Page() {
             }
         }
 
-        // After all uploads are complete, log the uploaded URLs
-        console.log("Upload", uploadedUrls);
-
-        // Save all URLs in state and update the form
         setFileUrls(uploadedUrls);
         setValue("file", uploadedUrls, { shouldValidate: true });
     };
 
     const UploadSingleFile = async (event) => {
         const file = event.target.files?.[0];
-
-        const formData = new FormData()
         if (file) {
+            const formData = new FormData();
             const uniqueFilename = Date.now() + "-" + file.name;
             formData.append("file", file, uniqueFilename);
-            dispatch(FileUpload(formData)).then((response) => {
-                console.log("Response", response.payload)
-                setMainUrl(response.payload.fileUrl)
-                setValue("image", file, { shouldValidate: true });
-            })
+
+            try {
+                const response = await dispatch(FileUpload(formData)).unwrap();
+                if (response?.fileUrl) {
+                    setMainUrl(response.fileUrl);
+                    setValue("image", response.fileUrl, { shouldValidate: true });
+                }
+            } catch (error) {
+                console.error("File upload failed:", error);
+            }
         }
     }
 
@@ -245,6 +257,7 @@ export default function Page() {
         }
 
     }
+
 
 
     return (
@@ -464,21 +477,21 @@ export default function Page() {
                                         onChange={UploadSingleFile}
                                         error={!!errors.image}
                                         hint={errors.image?.message}
-                                        multiple
                                     />
                                 </div>
                                 {
-
-                                    MainUrl != null &&
-                                    (
+                                    MainUrl != null && (
                                         <div className={styles.imageContainer}>
                                             <div className={styles.imageWrapper}>
-                                                <img alt="name" src={MainUrl} />
-
+                                                <Image
+                                                    alt="product"
+                                                    src={MainUrl}
+                                                    width={200}
+                                                    height={200}
+                                                    style={{ objectFit: 'cover' }}
+                                                />
                                             </div>
-
                                         </div>
-
                                     )
                                 }
 
@@ -501,8 +514,13 @@ export default function Page() {
 
                                                 <div key={index} className={styles.imageContainer}>
                                                     <div className={styles.imageWrapper}>
-                                                        <img alt="name" src={item} />
-
+                                                        <Image
+                                                            alt="product"
+                                                            src={item}
+                                                            width={200}
+                                                            height={200}
+                                                            style={{ objectFit: 'cover' }}
+                                                        />
                                                     </div>
 
                                                 </div>

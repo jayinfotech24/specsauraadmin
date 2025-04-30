@@ -5,7 +5,7 @@ import styles from "../../../../../styles/category.module.css"
 import Label from '@/components/form/Label'
 import ComponentCard from '@/components/common/ComponentCard'
 import TextArea from '@/components/form/input/TextArea'
-
+import Image from 'next/image';
 import FileInput from '@/components/form/input/FileInput';
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -27,23 +27,33 @@ export default function Index() {
     const id = searchParams.get('id'); // Safe to call directly
     const handleFileChange = (event) => {
         const file = event.target.files?.[0];
-        console.log("File", file)
-        const formData = new FormData()
         if (file) {
+            setValue("file", file, { shouldValidate: true });
+            const formData = new FormData();
             const uniqueFilename = Date.now() + "-" + file.name;
             formData.append("file", file, uniqueFilename);
             dispatch(FileUpload(formData)).then((response) => {
-                console.log("Response", response.payload)
-                setUrl(response.payload.fileUrl)
-                setFileUrl(response.payload.fileUrl)
-            })
+                if (response.payload && response.payload.fileUrl) {
+                    setUrl(response.payload.fileUrl);
+                    setFileUrl(response.payload.fileUrl);
+                }
+            });
         }
     };
 
+
     const schema = Yup.object().shape({
-        name: Yup.string().required("Name is required").min(3, "Name must be at least 3 characters"),
+        name: Yup.string()
+            .required("Name is required")
+            .min(3, "Name must be at least 3 characters"),
         description: Yup.string().required("Description is required"),
+        file: Yup.mixed().when('$id', {
+            is: (id) => !id, // When there is no id (creating new)
+            then: (schema) => schema.required("Please upload an image"), // Apply validation
+            otherwise: (schema) => schema.notRequired(), // No validation when updating
+        }),
     });
+
 
 
 
@@ -56,7 +66,11 @@ export default function Index() {
         formState: { errors },
     } = useForm({
         resolver: yupResolver(schema),
+        context: { id: id } // Pass the id to the validation context
     });
+
+
+    console.log("Errors", errors)
 
     const submitHandler = (data) => {
         setIsLoding(true)
@@ -137,17 +151,27 @@ export default function Index() {
 
                         <div>
                             <Label>Upload file</Label>
-                            <FileInput onChange={handleFileChange} className="custom-class" />
+                            <FileInput
+                                onChange={handleFileChange}
+                                className="custom-class"
+                                // {...register("file")}
+                                error={!!errors.file}
+                                hint={errors.file?.message}
+                            />
                         </div>
 
                         {
                             Url != null && (
                                 <div className={styles.imageContainer}>
                                     <div className={styles.imageWrapper}>
-                                        <img alt="name" src={Url} />
-
+                                        <Image
+                                            alt="category"
+                                            src={Url}
+                                            width={200}
+                                            height={200}
+                                            style={{ objectFit: 'cover' }}
+                                        />
                                     </div>
-
                                 </div>
                             )
                         }
