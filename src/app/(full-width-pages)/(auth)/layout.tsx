@@ -25,13 +25,13 @@ export default function AuthLayout({
                   <Image
                     width={150}
                     height={48}
-                   src="/images/logo/logo2.png"
+                    src="/images/logo/logo2.png"
                     alt="Logo"
                   />
                 </Link>
-                <p className="text-center text-gray-400 dark:text-white/60">
+                {/* <p className="text-center text-gray-400 dark:text-white/60">
                   Free and Open-Source Tailwind CSS Admin Dashboard Template
-                </p>
+                </p> */}
               </div>
             </div>
           </div>
