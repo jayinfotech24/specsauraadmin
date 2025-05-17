@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import Input from '@/components/form/input/InputField'
 import Label from '@/components/form/Label'
 import ComponentCard from '@/components/common/ComponentCard'
@@ -11,27 +11,29 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
 import { useDispatch } from 'react-redux';
-import { AddPoster, FileUpload } from '@/store/authSlice';
-import { useSearchParams } from 'next/navigation';
+import { AddPoster, FileUpload, UpdatePoster, GetPosterById } from '@/store/authSlice';
+import { useSearchParams, useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
+import Button from '@/components/ui/button/Button';
 
 import styles from "../../../../../styles/poster.module.css"
+import GlobalLoading from '../../../../../components/common/GlobalLoading';
 
 export default function PosterForm() {
     const [FileUrl, setFileUrl] = useState(null)
     const dispatch = useDispatch()
     const [IsLoading, setIsLoading] = useState(false)
     const [Url, setUrl] = useState(null)
+    const router = useRouter()
 
     const searchParams = useSearchParams();
     const id = searchParams.get('id');
 
     const handleFileChange = (event) => {
         const file = event.target.files?.[0];
-        console.log("File", file)
-
         if (file) {
             if (!file.type.startsWith('image/')) {
-                alert('Please upload an image file');
+                toast.error('Please upload an image file');
                 return;
             }
 
@@ -41,7 +43,7 @@ export default function PosterForm() {
                 const height = this.height;
 
                 if (width < 1000 || height < 500) {
-                    alert(`Image dimensions must be at least 1000x500 pixels. Current dimensions: ${width}x${height}`);
+                    toast.error(`Image dimensions must be at least 1000x500 pixels. Current dimensions: ${width}x${height}`);
                     return;
                 }
 
@@ -50,10 +52,14 @@ export default function PosterForm() {
                 formData.append("file", file, uniqueFilename);
 
                 dispatch(FileUpload(formData)).then((response) => {
-                    console.log("Response", response.payload)
-                    setFileUrl(response.payload.fileUrl)
-                    setUrl(response.payload.fileUrl)
-                    setValue("file", file, { shouldValidate: true });
+                    if (response.payload?.fileUrl) {
+                        setFileUrl(response.payload.fileUrl);
+                        setUrl(response.payload.fileUrl);
+                        setValue("file", file, { shouldValidate: true });
+                        toast.success('Image uploaded successfully!');
+                    }
+                }).catch((error) => {
+                    toast.error('Failed to upload image. Please try again.', error);
                 });
             };
 
@@ -64,11 +70,11 @@ export default function PosterForm() {
     const schema = Yup.object().shape({
         title: Yup.string().required("Title is required").min(3, "Title must be at least 3 characters"),
         description: Yup.string().required("Description is required"),
-        // file: Yup.mixed().when('$id', {
-        //     is: (id) => !id,
-        //     then: (schema) => schema.required("Please upload an image"),
-        //     otherwise: (schema) => schema.notRequired(),
-        // }),
+        file: Yup.mixed().when('$id', {
+            is: (id) => !id,
+            then: (schema) => schema.required("Please upload an image"),
+            otherwise: (schema) => schema.notRequired(),
+        }),
     });
 
     const {
@@ -78,39 +84,67 @@ export default function PosterForm() {
         formState: { errors },
     } = useForm({
         resolver: yupResolver(schema),
-
+        context: { id: id }
     });
 
-    const submitHandler = (data) => {
-        setIsLoading(true)
-
-        const jsonObject = {
-            url: FileUrl || Url,
-            title: data.title,
-            description: data.description
-        }
-
-
-        dispatch(AddPoster(jsonObject)).then((response) => {
-            console.log("Res", response)
-            if (response.payload.status == 200) {
-                setTimeout(() => {
-                    setIsLoading(false)
-                }, 2000)
+    const fetchPosterById = useCallback(async (id) => {
+        try {
+            const response = await dispatch(GetPosterById(id)).unwrap();
+            if (response.status === 200) {
+                setValue("title", response.items[0].title);
+                setValue("description", response.items[0].description);
+                setUrl(response.items[0].url);
+                toast.success('Poster details loaded successfully!');
             }
-            setIsLoading(false)
-        })
+        } catch (error) {
+            toast.error('Failed to load poster details');
+            console.error('Error loading poster:', error);
+        }
+    }, [dispatch, setValue]);
 
+    useEffect(() => {
+        if (id) {
+            fetchPosterById(id);
+        }
+    }, [id, fetchPosterById]);
+
+    const submitHandler = async (data) => {
+        setIsLoading(true);
+        try {
+            const jsonObject = {
+                url: FileUrl || Url,
+                title: data.title,
+                description: data.description
+            };
+
+            if (id) {
+                const response = await dispatch(UpdatePoster({ id, data: jsonObject })).unwrap();
+                if (response.status === 200) {
+                    toast.success('Poster updated successfully!');
+                    setTimeout(() => {
+                        router.push('/showposter');
+                    }, 1500);
+                }
+            } else {
+                const response = await dispatch(AddPoster(jsonObject)).unwrap();
+                if (response.status === 200) {
+                    toast.success('Poster added successfully!');
+                    setTimeout(() => {
+                        router.push('/showposter');
+                    }, 1500);
+                }
+            }
+        } catch (error) {
+            toast.error(id ? 'Failed to update poster' : 'Failed to add poster');
+            console.error('Error saving poster:', error);
+        } finally {
+            setIsLoading(false);
+        }
     };
-
-
-
 
     return (
         <div className={styles.main}>
-            {IsLoading && <div className="spinnerContainer">
-                <div className="spinner"></div>
-            </div>}
+            {IsLoading && <GlobalLoading />}
             <div className={styles.inner}>
                 <form onSubmit={handleSubmit(submitHandler)}>
                     <ComponentCard title={id ? "Update Poster" : "Add Poster"} className={styles.form}>
@@ -124,9 +158,11 @@ export default function PosterForm() {
                         </div>
                         <div>
                             <Label>Description</Label>
-                            <TextArea  {...register("description")}
+                            <TextArea {...register("description")}
                                 error={!!errors.description}
-                                hint={errors.description?.message} rows={6} />
+                                hint={errors.description?.message}
+                                rows={6}
+                            />
                         </div>
 
                         <div>
@@ -152,9 +188,29 @@ export default function PosterForm() {
                             </div>
                         )}
 
-                        <button type="submit" className={styles.submitButton}>
-                            {id ? "Update" : "Submit"}
-                        </button>
+                        <div className="flex justify-end gap-4 mt-6">
+                            <Button
+                                variant="secondary"
+                                onClick={() => router.push('/showposter')}
+                                disabled={IsLoading}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                className="bg-blue-600 hover:bg-blue-700 text-white"
+                                type="submit"
+                                disabled={IsLoading}
+                            >
+                                {IsLoading ? (
+                                    <div className="flex items-center gap-2">
+                                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                                        {id ? 'Updating...' : 'Submitting...'}
+                                    </div>
+                                ) : (
+                                    id ? 'Update Poster' : 'Add Poster'
+                                )}
+                            </Button>
+                        </div>
                     </ComponentCard>
                 </form>
             </div>

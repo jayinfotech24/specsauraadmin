@@ -2,8 +2,6 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import { DeleteCategory, GetCategory } from "@/store/authSlice";
-
-
 import Image from "next/image";
 import {
     Table, TableBody,
@@ -14,6 +12,8 @@ import {
 import { useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import Button from "@/components/ui/button/Button";
+import GlobalLoading from "@/components/common/GlobalLoading";
+import toast from "react-hot-toast";
 
 // interface Order {
 //     id: number;
@@ -42,39 +42,36 @@ export default function BasicTableOne() {
     const [IsLoading, setIsLoading] = useState(false)
     const [showDeleteModal, setShowDeleteModal] = useState(false)
     const [selectedCategory, setSelectedCategory] = useState(null)
-    const [showAlert, setShowAlert] = useState(false)
-    const [alertMessage, setAlertMessage] = useState("")
 
-    const showSuccessAlert = (message) => {
-        setAlertMessage(message);
-        setShowAlert(true);
-        setTimeout(() => {
-            setShowAlert(false);
-        }, 3000);
-    }
-
-    const GetCategoryData = useCallback(() => {
-        dispatch(GetCategory()).then((response) => {
-            console.log("Res", response);
-            if (response.payload.status == 200) {
-                setData(response.payload.items)
-            }
-        })
-    }, [dispatch])
-
-    const handleDelete = (id) => {
+    const GetCategoryData = useCallback(async () => {
         setIsLoading(true);
-        dispatch(DeleteCategory(id)).then((response) => {
-            if (response.payload.status === 200) {
-                GetCategoryData();
-                setShowDeleteModal(false);
-                showSuccessAlert("Category deleted successfully!");
+        try {
+            const response = await dispatch(GetCategory()).unwrap();
+            if (response.status === 200) {
+                setData(response.items);
+                toast.success('Categories loaded successfully!');
             }
-            setIsLoading(false);
-        }).catch((error) => {
+        } catch (error) {
+            console.error("Error fetching categories:", error);
+            toast.error('Failed to load categories');
+        }
+        setIsLoading(false);
+    }, [dispatch]);
+
+    const handleDelete = async (id) => {
+        setIsLoading(true);
+        try {
+            const response = await dispatch(DeleteCategory(id)).unwrap();
+            if (response.status === 200) {
+                await GetCategoryData();
+                setShowDeleteModal(false);
+                toast.success('Category deleted successfully!');
+            }
+        } catch (error) {
             console.error("Delete failed:", error);
-            setIsLoading(false);
-        });
+            toast.error('Failed to delete category');
+        }
+        setIsLoading(false);
     }
 
     const openDeleteModal = (category) => {
@@ -87,96 +84,111 @@ export default function BasicTableOne() {
     }, [GetCategoryData])
 
     return (
-        <>
-            {/* Alert Notification */}
-            {showAlert && (
-                <div className="fixed top-4 right-4 z-50">
-                    <div className="bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2">
-                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span>{alertMessage}</span>
-                    </div>
-                </div>
-            )}
+        <div className="p-6">
+            <div className="mb-6 flex justify-between items-center">
+                <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Categories</h1>
+                <Button
+                    onClick={() => router.push('/cat')}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                    Add New Category
+                </Button>
+            </div>
+
+            {IsLoading && <GlobalLoading />}
 
             <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
                 <div className="max-w-full overflow-x-auto">
-                    <div className="min-w-[1102px]">
+                    <div className="min-w-[800px]">
                         <Table>
-                            {/* Table Header */}
                             <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
                                 <TableRow>
                                     <TableCell
                                         isHeader
-                                        className="px-1 py-2 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                                        className="px-2 py-2 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 w-[100px]"
                                     >
                                         Category
                                     </TableCell>
                                     <TableCell
                                         isHeader
-                                        className="px-1 py-2 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                                        className="px-2 py-2 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 w-[200px]"
                                     >
                                         Category Name
                                     </TableCell>
                                     <TableCell
                                         isHeader
-                                        className="px-1 py-2 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                                        className="px-2 py-2 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 w-[100px]"
                                     >
                                         Action
                                     </TableCell>
                                     <TableCell
                                         isHeader
-                                        className="px-1 py-2 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                                        className="px-2 py-2 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 w-[100px]"
                                     >
                                         Delete
                                     </TableCell>
                                 </TableRow>
                             </TableHeader>
 
-                            {/* Table Body */}
                             <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-                                {Data.map((category, idx) => (
-                                    <TableRow
-                                        key={category._id}
-                                        className={`transition-colors ${idx % 2 === 0 ? "bg-gray-50 dark:bg-white/[0.01]" : "bg-white dark:bg-white/[0.03]"} hover:bg-blue-50 dark:hover:bg-blue-900/30`}
-                                    >
-                                        <TableCell className="px-1 py-2 text-start">
-                                            <div className="flex items-center gap-1">
-                                                <div className="w-9 h-9 overflow-hidden rounded-full border border-gray-200">
-                                                    <Image
-                                                        alt={category.title}
-                                                        width={36}
-                                                        height={36}
-                                                        src={category.url}
-                                                    />
-                                                </div>
+                                {IsLoading ? (
+                                    <TableRow>
+                                        <TableCell colSpan={4} className="py-8 text-center">
+                                            <div className="flex justify-center">
+                                                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
                                             </div>
                                         </TableCell>
-                                        <TableCell className="px-1 py-2 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                            {category.title}
-                                        </TableCell>
-                                        <TableCell className="px-1 py-2 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                            <Button
-                                                size="sm"
-                                                variant="primary"
-                                                onClick={() => router.push(`/cat/?id=${category._id}`)}
-                                            >
-                                                Update
-                                            </Button>
-                                        </TableCell>
-                                        <TableCell className="px-1 py-2 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                            <Button
-                                                size="sm"
-                                                className="bg-red-600 hover:bg-red-700 text-white"
-                                                onClick={() => openDeleteModal(category)}
-                                                disabled={IsLoading}
-                                            >
-                                                Delete
-                                            </Button>
+                                    </TableRow>
+                                ) : Data.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={4} className="py-8 text-center text-gray-500 dark:text-gray-400">
+                                            No categories found
                                         </TableCell>
                                     </TableRow>
-                                ))}
+                                ) : (
+                                    Data.map((category, idx) => (
+                                        <TableRow
+                                            key={category._id}
+                                            className={`transition-colors ${idx % 2 === 0 ? "bg-gray-50 dark:bg-white/[0.01]" : "bg-white dark:bg-white/[0.03]"} hover:bg-blue-50 dark:hover:bg-blue-900/30`}
+                                        >
+                                            <TableCell className="px-2 py-2 text-start">
+                                                <div className="flex items-center gap-1">
+                                                    <div className="w-8 h-8 overflow-hidden rounded-full border border-gray-200">
+                                                        <Image
+                                                            alt={category.title}
+                                                            width={32}
+                                                            height={32}
+                                                            src={category.url}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="px-2 py-2 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                                {category.title}
+                                            </TableCell>
+                                            <TableCell className="px-2 py-2 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                                <Button
+                                                    size="sm"
+                                                    variant="primary"
+                                                    onClick={() => router.push(`/cat/?id=${category._id}`)}
+                                                    disabled={IsLoading}
+                                                >
+                                                    Update
+                                                </Button>
+                                            </TableCell>
+                                            <TableCell className="px-2 py-2 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                                <Button
+                                                    size="sm"
+                                                    className="bg-red-600 hover:bg-red-700 text-white"
+                                                    onClick={() => openDeleteModal(category)}
+                                                    disabled={IsLoading}
+                                                >
+                                                    Delete
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
                             </TableBody>
                         </Table>
                     </div>
@@ -220,6 +232,6 @@ export default function BasicTableOne() {
                     </div>
                 </div>
             )}
-        </>
+        </div>
     );
 }

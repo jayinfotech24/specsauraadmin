@@ -7,6 +7,8 @@ import Backdrop from "@/layout/Backdrop";
 import GlobalLoading from "@/components/common/GlobalLoading";
 import { usePathname } from "next/navigation";
 import React, { useEffect, useState, Suspense } from "react";
+import { Toaster } from 'react-hot-toast';
+
 
 export default function AdminLayout({
   children,
@@ -18,6 +20,7 @@ export default function AdminLayout({
   const [isLoading, setIsLoading] = useState(false);
   const pathname = usePathname();
 
+
   useEffect(() => {
     setIsLoading(true);
 
@@ -28,6 +31,8 @@ export default function AdminLayout({
     return () => clearTimeout(timeout);
   }, [pathname]);
 
+
+
   const mainContentMargin = isMobileOpen
     ? "ml-0"
     : isExpanded || isHovered
@@ -36,6 +41,30 @@ export default function AdminLayout({
 
   return (
     <div className="min-h-screen xl:flex">
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#333',
+            color: '#fff',
+            padding: '16px',
+            borderRadius: '8px',
+          },
+          success: {
+            iconTheme: {
+              primary: '#4ade80',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
       {/* Sidebar and Backdrop */}
       <AppSidebar />
       <Backdrop />

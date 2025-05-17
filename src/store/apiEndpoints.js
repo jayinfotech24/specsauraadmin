@@ -19,6 +19,12 @@ const Appapis = {
     allPosters: "/wallpaper",
     updatePoster: (id) => `/wallpaper/${id}`,
     deletePoster: (id) => `/wallpaper/${id}`,
+    getPosterById: (id) => `/wallpaper/${id}`,
+    getAllVideos: "/video",
+    getVideoById: (id) => `/video/${id}`,
+    getDashboardData: "/dashboard",
+    updateVideo: (id) => `/video/${id}`,
+    deleteVideo: (id) => `/video/${id}`,
 }
 
 export default Appapis

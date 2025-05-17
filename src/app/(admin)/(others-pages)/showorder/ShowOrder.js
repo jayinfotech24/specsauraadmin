@@ -11,20 +11,28 @@ import {
 import { useDispatch } from "react-redux";
 import { GetAllOrders } from "@/store/authSlice";
 import Button from "@/components/ui/button/Button";
-
+import GlobalLoading from "@/components/common/GlobalLoading";
+import toast from "react-hot-toast";
 
 export default function BasicTableOne() {
     const dispatch = useDispatch()
     const [Data, setData] = useState([])
     const [expandedOrder, setExpandedOrder] = useState(null)
+    const [IsLoading, setIsLoading] = useState(false)
 
-    const GetOrderData = useCallback(() => {
-        dispatch(GetAllOrders()).then((response) => {
-            console.log("Res", response);
-            if (response.payload.status == 200) {
-                setData(response.payload.items)
+    const GetOrderData = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const response = await dispatch(GetAllOrders()).unwrap();
+            if (response.status === 200) {
+                setData(response.items);
+                toast.success('Orders loaded successfully!');
             }
-        })
+        } catch (error) {
+            console.error("Error fetching orders:", error);
+            toast.error('Failed to load orders');
+        }
+        setIsLoading(false);
     }, [dispatch])
 
     const toggleOrderDetails = (orderId) => {
@@ -324,10 +332,123 @@ export default function BasicTableOne() {
     }, [GetOrderData])
 
     return (
-        <>
-            {/* <RecentOrders orders={Data} /> */}
-            {/* Alert Notification */}
+        <div className="p-6">
+            <div className="mb-6 flex justify-between items-center">
+                <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Orders</h1>
+            </div>
 
+            {IsLoading && <GlobalLoading />}
+
+            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
+                <div className="max-w-full overflow-x-auto">
+                    <div className="min-w-[800px]">
+                        <Table>
+                            <TableHeader className="border-b border-gray-100 dark:border-white/[0.05] bg-gray-50 dark:bg-white/[0.02]">
+                                <TableRow>
+                                    <TableCell isHeader className="px-1.5 py-1.5 font-medium text-gray-500 text-start text-theme-xs">
+                                        Order ID
+                                    </TableCell>
+                                    <TableCell isHeader className="px-1.5 py-1.5 font-medium text-gray-500 text-start text-theme-xs">
+                                        Customer
+                                    </TableCell>
+                                    <TableCell isHeader className="px-1.5 py-1.5 font-medium text-gray-500 text-start text-theme-xs">
+                                        Total Amount
+                                    </TableCell>
+                                    <TableCell isHeader className="px-1.5 py-1.5 font-medium text-gray-500 text-start text-theme-xs">
+                                        Status
+                                    </TableCell>
+                                    <TableCell isHeader className="px-1.5 py-1.5 font-medium text-gray-500 text-start text-theme-xs">
+                                        Payment
+                                    </TableCell>
+                                    <TableCell isHeader className="px-1.5 py-1.5 font-medium text-gray-500 text-start text-theme-xs">
+                                        Date
+                                    </TableCell>
+                                    <TableCell isHeader className="px-1.5 py-1.5 font-medium text-gray-500 text-start text-theme-xs">
+                                        Action
+                                    </TableCell>
+                                </TableRow>
+                            </TableHeader>
+
+                            <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
+                                {IsLoading ? (
+                                    <TableRow>
+                                        <TableCell colSpan={7} className="py-8 text-center">
+                                            <div className="flex justify-center">
+                                                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ) : Data.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={7} className="py-8 text-center text-gray-500 dark:text-gray-400">
+                                            No orders found
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    Data.map((order) => (
+                                        <React.Fragment key={order._id}>
+                                            <TableRow className="hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors duration-150">
+                                                <TableCell className="px-1.5 py-1.5 text-start">
+                                                    <span className="text-sm font-medium text-gray-800">
+                                                        {order._id.slice(-6)}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell className="px-1.5 py-1.5 text-start">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-sm font-medium text-gray-800">
+                                                            {order.shippingAddress.fullName}
+                                                        </span>
+                                                        <span className="text-xs text-gray-500">
+                                                            {order.user.email}
+                                                        </span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="px-1.5 py-1.5 text-start">
+                                                    <span className="text-sm font-medium text-gray-800">
+                                                        ₹{order.totalAmount}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell className="px-1.5 py-1.5 text-start">
+                                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                                        ${order.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                                                            order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
+                                                                'bg-blue-100 text-blue-800'}`}>
+                                                        {order.status}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell className="px-1.5 py-1.5 text-start">
+                                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                                        ${order.paymentStatus === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                                                            order.paymentStatus === 'Paid' ? 'bg-green-100 text-green-800' :
+                                                                'bg-red-100 text-red-800'}`}>
+                                                        {order.paymentStatus}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell className="px-1.5 py-1.5 text-start">
+                                                    <span className="text-sm text-gray-500">
+                                                        {new Date(order.createdAt).toLocaleDateString()}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell className="px-1.5 py-1.5 text-start">
+                                                    <Button
+                                                        size="sm"
+                                                        variant="primary"
+                                                        onClick={() => toggleOrderDetails(order._id)}
+                                                        className="px-2 py-1 text-xs"
+                                                        disabled={IsLoading}
+                                                    >
+                                                        {expandedOrder?._id === order._id ? 'Hide Details' : 'View Details'}
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        </React.Fragment>
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </div>
+            </div>
 
             {/* Order Details Modal */}
             {expandedOrder && (
@@ -342,12 +463,14 @@ export default function BasicTableOne() {
                                         variant="primary"
                                         onClick={handlePrint}
                                         className="px-4 py-2"
+                                        disabled={IsLoading}
                                     >
                                         Print Invoice
                                     </Button>
                                     <button
                                         onClick={() => setExpandedOrder(null)}
                                         className="text-gray-500 hover:text-gray-700"
+                                        disabled={IsLoading}
                                     >
                                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -467,100 +590,6 @@ export default function BasicTableOne() {
                     </div>
                 </div>
             )}
-
-            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
-                <div className="max-w-full overflow-x-auto">
-                    <div className="min-w-[800px]">
-                        <Table>
-                            <TableHeader className="border-b border-gray-100 dark:border-white/[0.05] bg-gray-50 dark:bg-white/[0.02]">
-                                <TableRow>
-                                    <TableCell isHeader className="px-1.5 py-1.5 font-medium text-gray-500 text-start text-theme-xs">
-                                        Order ID
-                                    </TableCell>
-                                    <TableCell isHeader className="px-1.5 py-1.5 font-medium text-gray-500 text-start text-theme-xs">
-                                        Customer
-                                    </TableCell>
-                                    <TableCell isHeader className="px-1.5 py-1.5 font-medium text-gray-500 text-start text-theme-xs">
-                                        Total Amount
-                                    </TableCell>
-                                    <TableCell isHeader className="px-1.5 py-1.5 font-medium text-gray-500 text-start text-theme-xs">
-                                        Status
-                                    </TableCell>
-                                    <TableCell isHeader className="px-1.5 py-1.5 font-medium text-gray-500 text-start text-theme-xs">
-                                        Payment
-                                    </TableCell>
-                                    <TableCell isHeader className="px-1.5 py-1.5 font-medium text-gray-500 text-start text-theme-xs">
-                                        Date
-                                    </TableCell>
-                                    <TableCell isHeader className="px-1.5 py-1.5 font-medium text-gray-500 text-start text-theme-xs">
-                                        Action
-                                    </TableCell>
-                                </TableRow>
-                            </TableHeader>
-
-                            <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-                                {Data.map((order) => (
-                                    <React.Fragment key={order._id}>
-                                        <TableRow className="hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors duration-150">
-                                            <TableCell className="px-1.5 py-1.5 text-start">
-                                                <span className="text-sm font-medium text-gray-800">
-                                                    {order._id.slice(-6)}
-                                                </span>
-                                            </TableCell>
-                                            <TableCell className="px-1.5 py-1.5 text-start">
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm font-medium text-gray-800">
-                                                        {order.shippingAddress.fullName}
-                                                    </span>
-                                                    <span className="text-xs text-gray-500">
-                                                        {order.user.email}
-                                                    </span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="px-1.5 py-1.5 text-start">
-                                                <span className="text-sm font-medium text-gray-800">
-                                                    ₹{order.totalAmount}
-                                                </span>
-                                            </TableCell>
-                                            <TableCell className="px-1.5 py-1.5 text-start">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                                    ${order.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                                                        order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
-                                                            'bg-blue-100 text-blue-800'}`}>
-                                                    {order.status}
-                                                </span>
-                                            </TableCell>
-                                            <TableCell className="px-1.5 py-1.5 text-start">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                                    ${order.paymentStatus === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                                                        order.paymentStatus === 'Paid' ? 'bg-green-100 text-green-800' :
-                                                            'bg-red-100 text-red-800'}`}>
-                                                    {order.paymentStatus}
-                                                </span>
-                                            </TableCell>
-                                            <TableCell className="px-1.5 py-1.5 text-start">
-                                                <span className="text-sm text-gray-500">
-                                                    {new Date(order.createdAt).toLocaleDateString()}
-                                                </span>
-                                            </TableCell>
-                                            <TableCell className="px-1.5 py-1.5 text-start">
-                                                <Button
-                                                    size="sm"
-                                                    variant="primary"
-                                                    onClick={() => toggleOrderDetails(order._id)}
-                                                    className="px-2 py-1 text-xs"
-                                                >
-                                                    {expandedOrder === order._id ? 'Hide Details' : 'View Details'}
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    </React.Fragment>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </div>
-            </div>
-        </>
+        </div>
     );
 }

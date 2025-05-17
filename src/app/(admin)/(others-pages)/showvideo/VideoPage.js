@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { GetAllPosters, DeletePoster } from "@/store/authSlice";
+import { GetAllVideos, DeleteVideo } from "@/store/authSlice";
 import {
     Table,
     TableBody,
@@ -9,77 +9,83 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import Image from "next/image";
 import Button from "@/components/ui/button/Button";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import GlobalLoading from "@/components/common/GlobalLoading";
+import React from "react";
 
-export default function ShowPoster() {
-    const [IsLoading, setIsLoding] = useState(false)
+export default function VideoPage() {
+    const [isLoading, setIsLoading] = useState(false);
     const dispatch = useDispatch();
     const router = useRouter();
-
-    const [posters, setPosters] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
+    const [videos, setVideos] = useState([]);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [selectedPoster, setSelectedPoster] = useState(null);
+    const [selectedVideo, setSelectedVideo] = useState(null);
+    const [previewVideo, setPreviewVideo] = useState(null);
 
-    const fetchPosters = useCallback(async () => {
+    const fetchVideos = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await dispatch(GetAllPosters()).unwrap();
+            const response = await dispatch(GetAllVideos()).unwrap();
             if (response.status === 200) {
-                setPosters(response.items);
-                toast.success('Posters loaded successfully!');
+                setVideos(response.items);
+                toast.success('Videos loaded successfully!');
             }
         } catch (error) {
-            console.error("Error fetching posters:", error);
-            toast.error('Failed to load posters');
+            console.error("Error fetching videos:", error);
+            toast.error('Failed to load videos');
         }
         setIsLoading(false);
     }, [dispatch]);
 
     useEffect(() => {
-        fetchPosters();
-    }, [fetchPosters]);
+        fetchVideos();
+    }, [fetchVideos]);
 
     const handleDelete = async (id) => {
-        setIsLoding(true);
+        setIsLoading(true);
         try {
-            const response = await dispatch(DeletePoster(id)).unwrap();
+            const response = await dispatch(DeleteVideo(id)).unwrap();
             if (response.status === 200) {
-                fetchPosters(); // Refresh the list
+                fetchVideos();
                 setShowDeleteModal(false);
-                setSelectedPoster(null);
-                toast.success('Poster deleted successfully!');
+                setSelectedVideo(null);
+                toast.success('Video deleted successfully!');
             }
         } catch (error) {
-            console.error("Error deleting poster:", error);
-            toast.error('Failed to delete poster');
+            console.error("Error deleting video:", error);
+            toast.error('Failed to delete video');
         }
-        setIsLoding(false);
+        setIsLoading(false);
     };
 
-    const openDeleteModal = (poster) => {
-        setSelectedPoster(poster);
+    const openDeleteModal = (video) => {
+        setSelectedVideo(video);
         setShowDeleteModal(true);
     };
 
-    const handleEdit = (poster) => {
-        router.push(`/poster?id=${poster._id}`);
+    const handleEdit = (video) => {
+        router.push(`/video?id=${video._id}`);
+    };
+
+    const toggleVideoPreview = (video) => {
+        setPreviewVideo(previewVideo?.id === video._id ? null : video);
     };
 
     return (
         <div className="p-6">
             <div className="mb-6 flex justify-between items-center">
-                <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Posters</h1>
+                <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Videos</h1>
                 <Button
-                    onClick={() => router.push('/poster')}
+                    onClick={() => router.push('/video')}
                     className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
-                    Add New Poster
+                    Add New Video
                 </Button>
             </div>
+
+            {isLoading && <GlobalLoading />}
 
             <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
                 <div className="max-w-full overflow-x-auto p-4">
@@ -87,13 +93,10 @@ export default function ShowPoster() {
                         <TableHeader className="border-gray-100 dark:border-gray-800 border-y bg-gray-50 dark:bg-gray-800/50">
                             <TableRow>
                                 <TableCell isHeader className="py-4 px-6 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
-                                    Image
-                                </TableCell>
-                                <TableCell isHeader className="py-4 px-6 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
                                     Title
                                 </TableCell>
                                 <TableCell isHeader className="py-4 px-6 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
-                                    Description
+                                    Video Link
                                 </TableCell>
                                 <TableCell isHeader className="py-4 px-6 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
                                     Actions
@@ -104,57 +107,55 @@ export default function ShowPoster() {
                         <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
                             {isLoading ? (
                                 <TableRow>
-                                    <TableCell colSpan={4} className="py-8 text-center">
+                                    <TableCell colSpan={3} className="py-8 text-center">
                                         <div className="flex justify-center">
                                             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
                                         </div>
                                     </TableCell>
                                 </TableRow>
-                            ) : posters.length === 0 ? (
+                            ) : videos.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={4} className="py-8 text-center text-gray-500 dark:text-gray-400">
-                                        No posters found
+                                    <TableCell colSpan={3} className="py-8 text-center text-gray-500 dark:text-gray-400">
+                                        No videos found
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                posters.map((poster) => (
-                                    <TableRow key={poster._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                                        <TableCell className="py-4 px-6">
-                                            <div className="h-[80px] w-[120px] overflow-hidden rounded-lg shadow-sm">
-                                                <Image
-                                                    width={120}
-                                                    height={80}
-                                                    src={poster.url}
-                                                    className="h-full w-full object-cover"
-                                                    alt={poster.title}
-                                                />
-                                            </div>
-                                        </TableCell>
+                                videos.map((video) => (
+                                    <TableRow key={video._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
                                         <TableCell className="py-4 px-6">
                                             <span className="text-sm font-medium text-gray-800 dark:text-white">
-                                                {poster.title}
+                                                {video.title}
                                             </span>
                                         </TableCell>
                                         <TableCell className="py-4 px-6">
-                                            <span className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
-                                                {poster.description}
-                                            </span>
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-md">
+                                                    {video.url}
+                                                </span>
+                                                <Button
+                                                    size="sm"
+                                                    variant="secondary"
+                                                    onClick={() => toggleVideoPreview(video)}
+                                                >
+                                                    Preview
+                                                </Button>
+                                            </div>
                                         </TableCell>
                                         <TableCell className="py-4 px-6">
                                             <div className="flex gap-3">
                                                 <Button
                                                     size="sm"
                                                     className="bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200"
-                                                    onClick={() => handleEdit(poster)}
-                                                    disabled={IsLoading}
+                                                    onClick={() => handleEdit(video)}
+                                                    disabled={isLoading}
                                                 >
                                                     Edit
                                                 </Button>
                                                 <Button
                                                     size="sm"
                                                     className="bg-red-600 hover:bg-red-700 text-white transition-colors duration-200"
-                                                    onClick={() => openDeleteModal(poster)}
-                                                    disabled={IsLoading}
+                                                    onClick={() => openDeleteModal(video)}
+                                                    disabled={isLoading}
                                                 >
                                                     Delete
                                                 </Button>
@@ -168,6 +169,37 @@ export default function ShowPoster() {
                 </div>
             </div>
 
+            {/* Video Preview Modal */}
+            {previewVideo && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 mt-30">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-4xl w-full mx-4 shadow-xl">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                                {previewVideo.title}
+                            </h3>
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => setPreviewVideo(null)}
+                                className="hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </Button>
+                        </div>
+                        <div className="aspect-video w-full rounded-lg overflow-hidden shadow-lg">
+                            <iframe
+                                src={previewVideo.url}
+                                className="w-full h-full"
+                                allowFullScreen
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Delete Modal */}
             {showDeleteModal && (
                 <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
@@ -179,26 +211,26 @@ export default function ShowPoster() {
                                 </svg>
                             </div>
                             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                                Delete Poster
+                                Delete Video
                             </h3>
                             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-                                Are you sure you want to delete &quot;{selectedPoster?.title}&quot;? This action cannot be undone.
+                                Are you sure you want to delete &quot;{selectedVideo?.title}&quot;? This action cannot be undone.
                             </p>
 
                             <div className="flex justify-center space-x-4">
                                 <Button
                                     variant="secondary"
                                     onClick={() => setShowDeleteModal(false)}
-                                    disabled={IsLoading}
+                                    disabled={isLoading}
                                 >
                                     Cancel
                                 </Button>
                                 <Button
                                     className="bg-red-600 hover:bg-red-700 text-white"
-                                    onClick={() => handleDelete(selectedPoster._id)}
-                                    disabled={IsLoading}
+                                    onClick={() => handleDelete(selectedVideo._id)}
+                                    disabled={isLoading}
                                 >
-                                    {IsLoading ? 'Deleting...' : 'Delete'}
+                                    {isLoading ? 'Deleting...' : 'Delete'}
                                 </Button>
                             </div>
                         </div>

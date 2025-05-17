@@ -212,6 +212,66 @@ export const DeletePoster = createAsyncThunk("api/DeletePoster", async (id, { re
         return rejectWithValue(error.response?.data || "Something went wrong");
     }
 })
+export const GetPosterById = createAsyncThunk("api/GetPosterById", async (id, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.get(`${Appapis.Basurl}${Appapis.getPosterById(id)}`);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+export const GetAllVideos = createAsyncThunk("api/GetAllVideos", async (credentials, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.get(`${Appapis.Basurl}${Appapis.getAllVideos}`);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+export const GetVideoById = createAsyncThunk("api/GetVideoById", async (id, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.get(`${Appapis.Basurl}${Appapis.getVideoById(id)}`);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+export const GetDashboardData = createAsyncThunk("api/GetDashboardData", async (credentials, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.get(`${Appapis.Basurl}${Appapis.getDashboardData}`);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+
+export const UpdateVideo = createAsyncThunk("api/UpdateVideo", async (credentials, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.patch(`${Appapis.Basurl}${Appapis.updateVideo(id)}`, credentials);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+export const DeleteVideo = createAsyncThunk("api/DeleteVideo", async (id, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.delete(`${Appapis.Basurl}${Appapis.deleteVideo(id)}`);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+
+})
+
+
+
+
 const AuthSlice = createSlice({
     name: "auth",
     initialState,
@@ -443,6 +503,66 @@ const AuthSlice = createSlice({
                 state.loading = false;
             })
             .addCase(DeletePoster.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(GetPosterById.pending, (state) => {
+                state.loading = true
+            })
+            .addCase(GetPosterById.fulfilled, (state,) => {
+                state.loading = false;
+            })
+            .addCase(GetPosterById.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(GetAllVideos.pending, (state) => {
+                state.loading = true
+            })
+            .addCase(GetAllVideos.fulfilled, (state,) => {
+                state.loading = false;
+            })
+            .addCase(GetAllVideos.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(GetVideoById.pending, (state) => {
+                state.loading = true
+            })
+            .addCase(GetVideoById.fulfilled, (state,) => {
+                state.loading = false;
+            })
+            .addCase(GetVideoById.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(GetDashboardData.pending, (state) => {
+                state.loading = true
+            })
+            .addCase(GetDashboardData.fulfilled, (state) => {
+                state.loading = false;
+            })
+            .addCase(GetDashboardData.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(UpdateVideo.pending, (state) => {
+                state.loading = true
+            })
+            .addCase(UpdateVideo.fulfilled, (state,) => {
+                state.loading = false;
+            })
+            .addCase(UpdateVideo.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(DeleteVideo.pending, (state) => {
+                state.loading = true
+            })
+            .addCase(DeleteVideo.fulfilled, (state,) => {
+                state.loading = false;
+            })
+            .addCase(DeleteVideo.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })

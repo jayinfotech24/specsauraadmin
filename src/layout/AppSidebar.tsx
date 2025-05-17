@@ -20,8 +20,8 @@ import {
 
   SqaureVideoIcon
 } from "../icons/index";
-import SidebarWidget from "./SidebarWidget";
-import { useRouter } from "next/navigation";
+
+
 
 type NavItem = {
   name: string;
@@ -100,7 +100,9 @@ const navItems: NavItem[] = [
   {
     name: "Video",
     icon: <SqaureVideoIcon />,
-    subItems: [{ name: "Add Video", path: "/video", pro: false }],
+    subItems: [{ name: "Add Video", path: "/video", pro: false },
+    { name: "Show Video", path: "/showvideo", pro: false }
+    ],
   },
   // {
   //   name: "demo",
@@ -144,7 +146,7 @@ const othersItems: NavItem[] = [
 ];
 
 const AppSidebar: React.FC = () => {
-  const router = useRouter();
+
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
 
@@ -223,7 +225,7 @@ const AppSidebar: React.FC = () => {
             >
               <ul className="mt-2 space-y-1 ml-9">
                 {nav.subItems.map((subItem) => (
-                  <li key={subItem.name} onClick={() => router.push(subItem.path)}>
+                  <li key={subItem.name} >
                     <Link
                       href={subItem.path}
                       className={`menu-dropdown-item ${isActive(subItem.path)
@@ -394,7 +396,7 @@ const AppSidebar: React.FC = () => {
               {renderMenuItems(navItems, "main")}
             </div>
 
-            <div className="">
+            {/* <div className="">
               <h2
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered
                   ? "lg:justify-center"
@@ -408,10 +410,10 @@ const AppSidebar: React.FC = () => {
                 )}
               </h2>
               {renderMenuItems(othersItems, "others")}
-            </div>
+            </div> */}
           </div>
         </nav>
-        {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null}
+        {/* {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null} */}
       </div>
     </aside>
   );
