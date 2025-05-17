@@ -20,24 +20,58 @@ export default function Index() {
     const handleFileChange = (event) => {
         const file = event.target.files?.[0];
         console.log("File", file)
-        const formData = new FormData()
+
         if (file) {
+            // Check if file is a video
+            if (!file.type.startsWith('video/')) {
+                alert('Please upload a video file');
+                return;
+            }
+
+            // Check file size (e.g., max 100MB)
+            const maxSize = 100 * 1024 * 1024; // 100MB in bytes
+            if (file.size > maxSize) {
+                alert('Video file size should not exceed 100MB');
+                return;
+            }
+
+            const formData = new FormData();
             const uniqueFilename = Date.now() + "-" + file.name;
             formData.append("file", file, uniqueFilename);
+
+            // Create a serializable object for the file
+            const fileInfo = {
+                name: file.name,
+                size: file.size,
+                type: file.type
+            };
+
             dispatch(FileUpload(formData)).then((response) => {
                 console.log("Response", response.payload)
-                setFileUrl(response.payload.fileUrl)
-                setValue("file", file, { shouldValidate: true });
-            })
+                if (response.payload?.fileUrl) {
+                    setFileUrl(response.payload.fileUrl);
+                    setValue("file", fileInfo, { shouldValidate: true });
+                }
+            }).catch(error => {
+                console.error("Upload error:", error);
+                alert("Error uploading file. Please try again.");
+            });
         }
     };
 
     const schema = Yup.object().shape({
         title: Yup.string().required("Title is required").min(3, "Title  must be at least 3 characters"),
-
         file: Yup
             .mixed()
-            .required("Please upload a video file ."),
+            .required("Please upload a video file.")
+            .test('fileType', 'Only video files are allowed', (value) => {
+                if (!value) return false;
+                return value.type.startsWith('video/');
+            })
+            .test('fileSize', 'File size is too large', (value) => {
+                if (!value) return false;
+                return value.size <= 100 * 1024 * 1024; // 100MB
+            }),
     });
 
 
@@ -50,24 +84,34 @@ export default function Index() {
         resolver: yupResolver(schema),
     });
     const submitHandler = (data) => {
-        setIsLoding(true)
+        if (!FileUrl) {
+            alert("Please upload a video file first");
+            return;
+        }
 
+        setIsLoding(true);
         const jsonObject = {
             url: FileUrl,
             title: data.title,
+        };
 
-        }
-
-        dispatch(AddVideo(jsonObject)).then((response) => {
-            console.log("Res", response)
-            if (response.payload.status == 200) {
-                setTimeout(() => {
-                    setIsLoding(false)
-                }, 2000)
-            }
-            setIsLoding(false)
-        })
-        setIsLoding(false)
+        dispatch(AddVideo(jsonObject))
+            .then((response) => {
+                console.log("Res", response);
+                if (response.payload?.status === 200) {
+                    // Reset form after successful submission
+                    setFileUrl(null);
+                    setValue("file", null);
+                    setValue("title", "");
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Error adding video. Please try again.");
+            })
+            .finally(() => {
+                setIsLoding(false);
+            });
     };
     return (
         <div className={styles.main}>

@@ -145,7 +145,63 @@ export const UpdateProductById = createAsyncThunk(
     }
 );
 
+export const DeleteCategory = createAsyncThunk("api/DeleteCategory", async (id, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.delete(`${Appapis.Basurl}${Appapis.deleteCategory(id)}`);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
 
+export const DeleteProduct = createAsyncThunk("api/DeleteProduct", async (id, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.delete(`${Appapis.Basurl}${Appapis.deleteProduct(id)}`);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+export const GetAllOrders = createAsyncThunk("api/GetAllOrders", async (credentials, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.get(`${Appapis.Basurl}${Appapis.allOrders}`);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+export const GetAllPosters = createAsyncThunk("api/GetAllPosters", async (credentials, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.get(`${Appapis.Basurl}${Appapis.allPosters}`);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+export const UpdatePoster = createAsyncThunk(
+    "api/UpdatePoster",
+    async ({ id, data }, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.patch(`${Appapis.Basurl}${Appapis.updatePoster(id)}`, data);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data || "Something went wrong");
+        }
+    }
+);
+export const DeletePoster = createAsyncThunk("api/DeletePoster", async (id, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.delete(`${Appapis.Basurl}${Appapis.deletePoster(id)}`);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
 const AuthSlice = createSlice({
     name: "auth",
     initialState,
@@ -296,6 +352,73 @@ const AuthSlice = createSlice({
 
             })
             .addCase(UpdateProductById.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(DeleteCategory.pending, (state) => {
+                state.loading = true
+
+            })
+            .addCase(DeleteCategory.fulfilled, (state,) => {
+                state.loading = false;
+
+            })
+            .addCase(DeleteCategory.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(DeleteProduct.pending, (state) => {
+                state.loading = true
+
+            })
+            .addCase(DeleteProduct.fulfilled, (state,) => {
+                state.loading = false;
+
+            })
+            .addCase(DeleteProduct.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(GetAllOrders.pending, (state) => {
+                state.loading = true
+
+            })
+            .addCase(GetAllOrders.fulfilled, (state,) => {
+                state.loading = false;
+
+            })
+            .addCase(GetAllOrders.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(GetAllPosters.pending, (state) => {
+                state.loading = true
+
+            })
+            .addCase(GetAllPosters.fulfilled, (state,) => {
+                state.loading = false;
+            })
+            .addCase(GetAllPosters.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(UpdatePoster.pending, (state) => {
+                state.loading = true
+            })
+            .addCase(UpdatePoster.fulfilled, (state,) => {
+                state.loading = false;
+            })
+            .addCase(UpdatePoster.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(DeletePoster.pending, (state) => {
+                state.loading = true
+            })
+            .addCase(DeletePoster.fulfilled, (state,) => {
+                state.loading = false;
+            })
+            .addCase(DeletePoster.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })
