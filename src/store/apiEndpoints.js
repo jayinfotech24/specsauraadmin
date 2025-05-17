@@ -1,5 +1,5 @@
 const Appapis = {
-    Basurl: "http://api.specsaura.com/api",
+    Basurl: "https://api.specsaura.com/api",
     signIn: "/admin/login",
     addCategory: "/category",
     fileUpload: "/upload",
