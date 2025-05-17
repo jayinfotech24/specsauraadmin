@@ -1,5 +1,6 @@
-const page = ()=>{
-    return(
+"use client"
+const page = () => {
+    return (
         <h1>Index</h1>
     )
 }

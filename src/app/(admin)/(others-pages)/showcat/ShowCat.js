@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useCallback, useEffect, useState } from "react";
-
+import { DeleteCategory, GetCategory } from "@/store/authSlice";
 
 
 import Image from "next/image";
@@ -12,7 +12,6 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { useDispatch } from "react-redux";
-import { GetProductDetail, DeleteProduct } from "@/store/authSlice";
 import { useRouter } from "next/navigation";
 import Button from "@/components/ui/button/Button";
 
@@ -37,26 +36,14 @@ import Button from "@/components/ui/button/Button";
 
 
 export default function BasicTableOne() {
-
-
-
     const router = useRouter()
     const dispatch = useDispatch()
     const [Data, setData] = useState([])
     const [IsLoading, setIsLoading] = useState(false)
     const [showDeleteModal, setShowDeleteModal] = useState(false)
-    const [selectedProduct, setSelectedProduct] = useState(null)
+    const [selectedCategory, setSelectedCategory] = useState(null)
     const [showAlert, setShowAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState("")
-
-    const GetCategoryData = useCallback(() => {
-        dispatch(GetProductDetail()).then((response) => {
-            console.log("Res", response);
-            if (response.payload.status == 200) {
-                setData(response.payload.products)
-            }
-        })
-    }, [dispatch])
 
     const showSuccessAlert = (message) => {
         setAlertMessage(message);
@@ -66,13 +53,22 @@ export default function BasicTableOne() {
         }, 3000);
     }
 
+    const GetCategoryData = useCallback(() => {
+        dispatch(GetCategory()).then((response) => {
+            console.log("Res", response);
+            if (response.payload.status == 200) {
+                setData(response.payload.items)
+            }
+        })
+    }, [dispatch])
+
     const handleDelete = (id) => {
         setIsLoading(true);
-        dispatch(DeleteProduct(id)).then((response) => {
+        dispatch(DeleteCategory(id)).then((response) => {
             if (response.payload.status === 200) {
                 GetCategoryData();
                 setShowDeleteModal(false);
-                showSuccessAlert("Product deleted successfully!");
+                showSuccessAlert("Category deleted successfully!");
             }
             setIsLoading(false);
         }).catch((error) => {
@@ -81,8 +77,8 @@ export default function BasicTableOne() {
         });
     }
 
-    const openDeleteModal = (product) => {
-        setSelectedProduct(product);
+    const openDeleteModal = (category) => {
+        setSelectedCategory(category);
         setShowDeleteModal(true);
     }
 
@@ -106,106 +102,74 @@ export default function BasicTableOne() {
 
             <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
                 <div className="max-w-full overflow-x-auto">
-                    <div className="min-w-[800px]">
+                    <div className="min-w-[1102px]">
                         <Table>
-                            <TableHeader className="border-b border-gray-100 dark:border-white/[0.05] bg-gray-50 dark:bg-white/[0.02]">
+                            {/* Table Header */}
+                            <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
                                 <TableRow>
                                     <TableCell
                                         isHeader
-                                        className="px-1.5 py-1.5 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                                        className="px-1 py-2 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                                     >
-                                        Product
+                                        Category
                                     </TableCell>
                                     <TableCell
                                         isHeader
-                                        className="px-1.5 py-1.5 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                                        className="px-1 py-2 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                                     >
-                                        Gender
+                                        Category Name
                                     </TableCell>
                                     <TableCell
                                         isHeader
-                                        className="px-1.5 py-1.5 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                                    >
-                                        Stock
-                                    </TableCell>
-                                    <TableCell
-                                        isHeader
-                                        className="px-1.5 py-1.5 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                                    >
-                                        Available
-                                    </TableCell>
-                                    <TableCell
-                                        isHeader
-                                        className="px-1.5 py-1.5 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                                    >
-                                        Frame
-                                    </TableCell>
-                                    <TableCell
-                                        isHeader
-                                        className="px-1.5 py-1.5 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                                        className="px-1 py-2 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                                     >
                                         Action
                                     </TableCell>
                                     <TableCell
                                         isHeader
-                                        className="px-1.5 py-1.5 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                                        className="px-1 py-2 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                                     >
                                         Delete
                                     </TableCell>
                                 </TableRow>
                             </TableHeader>
 
+                            {/* Table Body */}
                             <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-                                {Data.map((product) => (
-                                    <TableRow key={product._id} className="hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors duration-150">
-                                        <TableCell className="px-1.5 py-1.5 text-start">
-                                            <div className="flex items-center gap-1.5">
-                                                <div className="w-6 h-6 overflow-hidden rounded-full">
+                                {Data.map((category, idx) => (
+                                    <TableRow
+                                        key={category._id}
+                                        className={`transition-colors ${idx % 2 === 0 ? "bg-gray-50 dark:bg-white/[0.01]" : "bg-white dark:bg-white/[0.03]"} hover:bg-blue-50 dark:hover:bg-blue-900/30`}
+                                    >
+                                        <TableCell className="px-1 py-2 text-start">
+                                            <div className="flex items-center gap-1">
+                                                <div className="w-9 h-9 overflow-hidden rounded-full border border-gray-200">
                                                     <Image
-                                                        alt={product.name}
-                                                        width={24}
-                                                        height={24}
-                                                        src={product.url}
-                                                        className="object-cover"
+                                                        alt={category.title}
+                                                        width={36}
+                                                        height={36}
+                                                        src={category.url}
                                                     />
-                                                </div>
-                                                <div>
-                                                    <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                                                        {product.name}
-                                                    </span>
-                                                    <span className="block text-gray-500 text-theme-xs dark:text-gray-400">
-                                                        {`${product.price} ₹`}
-                                                    </span>
                                                 </div>
                                             </div>
                                         </TableCell>
-                                        <TableCell className="px-1.5 py-1.5 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                            {product.gender}
+                                        <TableCell className="px-1 py-2 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                            {category.title}
                                         </TableCell>
-                                        <TableCell className="px-1.5 py-1.5 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                            {product.totalItems}
-                                        </TableCell>
-                                        <TableCell className="px-1.5 py-1.5 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                            {product.availableItems}
-                                        </TableCell>
-                                        <TableCell className="px-1.5 py-1.5 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                            {`${product.frameWidth} x ${product.frameHeight}`}
-                                        </TableCell>
-                                        <TableCell className="px-1.5 py-1.5 text-start">
+                                        <TableCell className="px-1 py-2 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                                             <Button
                                                 size="sm"
                                                 variant="primary"
-                                                onClick={() => router.push(`/pro/?id=${product._id}`)}
-                                                className="px-1.5 py-0.5 text-xs"
+                                                onClick={() => router.push(`/cat/?id=${category._id}`)}
                                             >
                                                 Update
                                             </Button>
                                         </TableCell>
-                                        <TableCell className="px-1.5 py-1.5 text-start">
+                                        <TableCell className="px-1 py-2 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                                             <Button
                                                 size="sm"
-                                                className="bg-red-600 hover:bg-red-700 text-white px-1.5 py-0.5 text-xs"
-                                                onClick={() => openDeleteModal(product)}
+                                                className="bg-red-600 hover:bg-red-700 text-white"
+                                                onClick={() => openDeleteModal(category)}
                                                 disabled={IsLoading}
                                             >
                                                 Delete
@@ -230,10 +194,10 @@ export default function BasicTableOne() {
                                 </svg>
                             </div>
                             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                                Delete Product
+                                Delete Category
                             </h3>
                             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-                                Are you sure you want to delete &quot;{selectedProduct?.name}&quot;? This action cannot be undone.
+                                Are you sure you want to delete &quot;{selectedCategory?.title}&quot;? This action cannot be undone.
                             </p>
 
                             <div className="flex justify-center space-x-4">
@@ -246,7 +210,7 @@ export default function BasicTableOne() {
                                 </Button>
                                 <Button
                                     className="bg-red-600 hover:bg-red-700 text-white"
-                                    onClick={() => handleDelete(selectedProduct._id)}
+                                    onClick={() => handleDelete(selectedCategory._id)}
                                     disabled={IsLoading}
                                 >
                                     {IsLoading ? 'Deleting...' : 'Delete'}

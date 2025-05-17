@@ -13,6 +13,7 @@ import { useDispatch } from "react-redux";
 import { Login } from "@/store/authSlice";
 import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast"
+import GlobalLoading from "../common/GlobalLoading";
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -62,9 +63,7 @@ export default function SignInForm() {
         position="top-center"
         reverseOrder={false}
       />
-      {IsLoading && <div className="spinnerContainer">
-        <div className="spinner"></div>
-      </div>}
+      {IsLoading &&<GlobalLoading />}
       <div className="w-full max-w-md sm:pt-10 mx-auto mb-5">
         {/* <Link
           href="/"

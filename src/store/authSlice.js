@@ -2,11 +2,21 @@ import axiosInstance from "./axiosInstance";
 import Appapis from "./apiEndpoints";
 import fileInstance from "./fileInstance"
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+
+// Helper function to safely access localStorage
+const getStoredToken = () => {
+    if (typeof window !== 'undefined') {
+        return localStorage.getItem("authToken");
+    }
+    return null;
+};
+
 const initialState = {
-    count: 0,
+    user: null,
+    token: getStoredToken(),
+    isAuthenticated: !!getStoredToken(),
     loading: false,
     error: null
-
 };
 
 export const Login = createAsyncThunk("api/login", async (credentials, { rejectWithValue }) => {
@@ -206,20 +216,34 @@ const AuthSlice = createSlice({
     name: "auth",
     initialState,
     reducers: {
-
+        logout: (state) => {
+            state.user = null;
+            state.token = null;
+            state.isAuthenticated = false;
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem("authToken");
+            }
+        },
+        clearError: (state) => {
+            state.error = null;
+        }
     },
-
     extraReducers: (builder) => {
         builder
             .addCase(Login.pending, (state) => {
-                state.loading = true
-
+                state.loading = true;
+                state.error = null;
             })
-            .addCase(Login.fulfilled, (state) => {
+            .addCase(Login.fulfilled, (state, action) => {
                 state.loading = false;
-
+                state.user = action.payload.user;
+                state.token = action.payload.token;
+                state.isAuthenticated = true;
+                if (typeof window !== 'undefined') {
+                    localStorage.setItem("authToken", action.payload.token);
+                }
             })
-            .addCase(Login.rejected, (state) => {
+            .addCase(Login.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })
@@ -425,5 +449,5 @@ const AuthSlice = createSlice({
     }
 })
 
-
+export const { logout, clearError } = AuthSlice.actions;
 export default AuthSlice.reducer;

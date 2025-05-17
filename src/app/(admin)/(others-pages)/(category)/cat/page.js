@@ -1,4 +1,4 @@
-
+"use client"
 import { Suspense } from 'react';
 import Index from './ClientPage';
 // Lazy load the actual component
