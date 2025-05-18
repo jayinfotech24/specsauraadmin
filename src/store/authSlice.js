@@ -269,8 +269,22 @@ export const DeleteVideo = createAsyncThunk("api/DeleteVideo", async (id, { reje
 
 })
 
-
-
+export const UpdateOrderStatus = createAsyncThunk(
+    "api/UpdateOrderStatus",
+    async ({ order, newStatus }, { rejectWithValue }) => {
+        try {
+            const updatedOrderData = {
+                ...order,
+                status: newStatus,
+                // paymentStatus: newStatus === 'Delivered' ? 'Paid' : 'Pending'
+            };
+            const response = await axiosInstance.patch(`${Appapis.Basurl}${Appapis.updateOrderStatus(order._id)}`, updatedOrderData);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data || "Something went wrong");
+        }
+    }
+);
 
 const AuthSlice = createSlice({
     name: "auth",
@@ -563,6 +577,16 @@ const AuthSlice = createSlice({
                 state.loading = false;
             })
             .addCase(DeleteVideo.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(UpdateOrderStatus.pending, (state) => {
+                state.loading = true
+            })
+            .addCase(UpdateOrderStatus.fulfilled, (state,) => {
+                state.loading = false;
+            })
+            .addCase(UpdateOrderStatus.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })

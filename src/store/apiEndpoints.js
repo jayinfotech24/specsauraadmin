@@ -16,6 +16,7 @@ const Appapis = {
     deleteWallpaper: (id) => `/wallpaper/${id}`,
     deleteVideo: (id) => `/video/${id}`,
     allOrders: "/order/all",
+    updateOrderStatus: (id) => `/order/${id}/`,
     allPosters: "/wallpaper",
     updatePoster: (id) => `/wallpaper/${id}`,
     deletePoster: (id) => `/wallpaper/${id}`,
