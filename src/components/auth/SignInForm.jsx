@@ -53,6 +53,9 @@ export default function SignInForm() {
         localStorage.setItem("authToken", response.payload.authToken)
         setIsLoading(false)
       }
+      if (response.payload.status == 400) {
+        toast.error(response.payload.message)
+      }
       setIsLoading(false)
     })
   };
@@ -112,7 +115,7 @@ export default function SignInForm() {
                     />
                     <span
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer z-10"
+                      className="absolute right-4 top-1/3 -translate-y-1/2 cursor-pointer z-10"
                     >
                       {showPassword ? (
                         <EyeIcon className="fill-gray-500 dark:fill-gray-400" />
