@@ -26,6 +26,11 @@ const Appapis = {
     getDashboardData: "/dashboard",
     updateVideo: (id) => `/video/${id}`,
     deleteVideo: (id) => `/video/${id}`,
+    bloglist: "/blog",
+    addBlog: "/blog",
+    updateBlog: (id) => `/blog/${id}`,
+    deleteBlog: (id) => `/blog/${id}`,
+    getBlogById: (id) => `/blog/${id}`,
 }
 
 export default Appapis

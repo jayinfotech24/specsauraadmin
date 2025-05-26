@@ -18,7 +18,8 @@ import {
   // UserCircleIcon,
   ImageIcon,
 
-  SqaureVideoIcon
+  SqaureVideoIcon,
+  PageIcon
 } from "../icons/index";
 
 
@@ -102,6 +103,13 @@ const navItems: NavItem[] = [
     icon: <SqaureVideoIcon />,
     subItems: [{ name: "Add Video", path: "/video", pro: false },
     { name: "Show Video", path: "/showvideo", pro: false }
+    ],
+  },
+  {
+    name: "Blog",
+    icon: <PageIcon />,
+    subItems: [{ name: "Blog", path: "/blog", pro: false },
+    { name: "Show Blog", path: "/showblog", pro: false }
     ],
   },
   // {

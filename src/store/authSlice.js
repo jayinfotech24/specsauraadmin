@@ -286,6 +286,54 @@ export const UpdateOrderStatus = createAsyncThunk(
     }
 );
 
+export const GetBlogList = createAsyncThunk("api/GetBlogList", async (credentials, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.get(`${Appapis.Basurl}${Appapis.bloglist}`);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+
+
+export const AddBlog = createAsyncThunk("api/AddBlog", async (credentials, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.post(`${Appapis.Basurl}${Appapis.addBlog}`, credentials);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+export const UpdateBlog = createAsyncThunk("api/UpdateBlog", async ({ id, data }, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.patch(`${Appapis.Basurl}${Appapis.updateBlog(id)}`, data);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+export const DeleteBlog = createAsyncThunk("api/DeleteBlog", async (id, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.delete(`${Appapis.Basurl}${Appapis.deleteBlog(id)}`);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+export const GetBlogById = createAsyncThunk("api/GetBlogById", async (id, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.get(`${Appapis.Basurl}${Appapis.getBlogById(id)}`);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+
 const AuthSlice = createSlice({
     name: "auth",
     initialState,
@@ -590,6 +638,59 @@ const AuthSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
+            .addCase(GetBlogList.pending, (state) => {
+                state.loading = true
+            })
+            .addCase(GetBlogList.fulfilled, (state,) => {
+                state.loading = false;
+            })
+            .addCase(GetBlogList.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(AddBlog.pending, (state) => {
+                state.loading = true
+            })
+            .addCase(AddBlog.fulfilled, (state,) => {
+                state.loading = false;
+            })
+            .addCase(AddBlog.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(UpdateBlog.pending, (state) => {
+                state.loading = true
+            })
+            .addCase(UpdateBlog.fulfilled, (state,) => {
+                state.loading = false;
+            })
+            .addCase(UpdateBlog.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(DeleteBlog.pending, (state) => {
+                state.loading = true
+            })
+            .addCase(DeleteBlog.fulfilled, (state,) => {
+                state.loading = false;
+            })
+            .addCase(DeleteBlog.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(GetBlogById.pending, (state) => {
+                state.loading = true
+            })
+            .addCase(GetBlogById.fulfilled, (state,) => {
+                state.loading = false;
+            })
+            .addCase(GetBlogById.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+
+
     }
 })
 
