@@ -21,6 +21,8 @@ import { ProductById } from "../../../../../store/authSlice"
 import RadioButtons from '@/components/form/form-elements/RadioButtons'
 import { useSearchParams } from 'next/navigation'
 import Image from 'next/image';
+import { Toaster } from 'react-hot-toast';
+
 export default function Page() {
     const schema = Yup.object().shape({
         name: Yup.string().required("Please enter product name."),
@@ -56,16 +58,17 @@ export default function Page() {
         }),
     });
 
-
-
+    const [selectedFiles, setSelectedFiles] = useState([]);
+    const [selectedMainFile, setSelectedMainFile] = useState(null);
     const [FileUrls, setFileUrls] = useState([]);
-    const [MainUrl, setMainUrl] = useState(null)
+    const [MainUrl, setMainUrl] = useState(null);
+    const [localMainUrl, setLocalMainUrl] = useState(null);
+    const [localFileUrls, setLocalFileUrls] = useState([]);
 
     const [OptionsList, setOptions] = useState([])
     const [IsLoading, setIsLoading] = useState(false)
     const dispatch = useDispatch()
     const searchParams = useSearchParams();
-
 
     const id = searchParams.get('id'); // Safe to call directly
     const {
@@ -77,49 +80,71 @@ export default function Page() {
         resolver: yupResolver(schema),
         context: { id } // Pass the id to the validation context
     });
-    const handleFileChange = async (event) => {
+
+    const handleFileChange = (event) => {
         const files = event.target.files;
-        const uploadedUrls = [];
+        const localUrls = [];
+        const selectedFiles = [];
 
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
-            const formData = new FormData();
-            const uniqueFilename = `${Date.now()}-${file.name}`;
-            formData.append("file", file, uniqueFilename);
-
-            try {
-                const response = await dispatch(FileUpload(formData)).unwrap();
-                if (response?.fileUrl) {
-                    uploadedUrls.push(response.fileUrl);
-                }
-            } catch (error) {
-                console.error("File upload failed:", error);
+            if (!file.type.startsWith('image/')) {
+                toast.error('Please upload image files only', {
+                    style: {
+                        marginTop: '100px',
+                        background: '#ff4d4f',
+                        color: '#fff',
+                    },
+                });
+                return;
             }
+
+            // Create local URL for preview
+            const localUrl = URL.createObjectURL(file);
+            localUrls.push(localUrl);
+            selectedFiles.push(file);
         }
 
-        setFileUrls(uploadedUrls);
-        setValue("file", uploadedUrls, { shouldValidate: true });
+        setLocalFileUrls(localUrls);
+        setSelectedFiles(selectedFiles);
+        setValue("file", selectedFiles, { shouldValidate: true });
     };
 
-    const UploadSingleFile = async (event) => {
+    const UploadSingleFile = (event) => {
         const file = event.target.files?.[0];
         if (file) {
-            const formData = new FormData();
-            const uniqueFilename = Date.now() + "-" + file.name;
-            formData.append("file", file, uniqueFilename);
-
-            try {
-                const response = await dispatch(FileUpload(formData)).unwrap();
-                if (response?.fileUrl) {
-                    setMainUrl(response.fileUrl);
-                    setValue("image", response.fileUrl, { shouldValidate: true });
-                }
-            } catch (error) {
-                console.error("File upload failed:", error);
+            if (!file.type.startsWith('image/')) {
+                toast.error('Please upload an image file', {
+                    style: {
+                        marginTop: '100px',
+                        background: '#ff4d4f',
+                        color: '#fff',
+                    },
+                });
+                return;
             }
-        }
-    }
 
+            // Create local URL for preview
+            const localUrl = URL.createObjectURL(file);
+            setLocalMainUrl(localUrl);
+            setSelectedMainFile(file);
+            setValue("image", file, { shouldValidate: true });
+        }
+    };
+
+    // Clean up local URLs when component unmounts
+    useEffect(() => {
+        return () => {
+            if (localMainUrl && localMainUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(localMainUrl);
+            }
+            localFileUrls.forEach(url => {
+                if (url.startsWith('blob:')) {
+                    URL.revokeObjectURL(url);
+                }
+            });
+        };
+    }, [localMainUrl, localFileUrls]);
 
     const GetProductById = useCallback(() => {
         dispatch(ProductById(id)).then((response) => {
@@ -168,7 +193,6 @@ export default function Page() {
         });
     }, [dispatch, id, setValue]);
 
-
     useEffect(() => {
         if (id) {
             GetProductById()
@@ -191,7 +215,6 @@ export default function Page() {
         })
     }, [dispatch])
 
-
     useEffect(() => {
         GetCategoryList()
     }, [GetCategoryList])
@@ -203,73 +226,154 @@ export default function Page() {
         });
     };
 
-
     console.log("EE", errors)
-
 
     useEffect(() => {
         console.log("Op", OptionsList)
     }, [OptionsList])
+
     const submitHandler = async (data) => {
-        setIsLoading(true)
-        const jsonObject = {
-            name: data?.name,
-            color: data.color,
-            category: data.category,
-            price: data.price,
-            totalItems: data.totalItems,
-            availableItems: data.availableItems,
-            url: MainUrl,
-            images: FileUrls,
-            description: data.description,
-            brandName: data.brandName,
-            modelNo: data.modelNo,     // instead of hardcoded, use from form if needed
-            productID: data.productID, // same here
-            frameWidth: data.frameWidth,
-            frameHeight: data.frameHeight,
-            frameDimention: data.frameDimention,
-            frameColor: data.frameColor,
-            lensColor: data.lensColor,
-            templeColor: data.templeColor,
-            frameMaterial: data.frameMaterial,
-            lens: data.lens,
-            powerSunglasses: data.powerSunglasses,
-            gender: data.gender,
-            warranty: data.warranty
-        };
+        setIsLoading(true);
+        try {
+            let finalMainUrl = MainUrl;
+            let finalFileUrls = FileUrls;
 
+            // Upload main image if it's new
+            if (selectedMainFile && (!id || selectedMainFile !== MainUrl)) {
+                const formData = new FormData();
+                const uniqueFilename = Date.now() + "-" + selectedMainFile.name;
+                formData.append("file", selectedMainFile, uniqueFilename);
 
-        if (id) {
-            dispatch(UpdateProductById({ id, data: jsonObject })).then((response) => {
-                console.log("ResU", response);
-                if (response.payload.status === 200) {
-                    router.push("/showcat");
+                const uploadResponse = await dispatch(FileUpload(formData)).unwrap();
+                if (uploadResponse?.fileUrl) {
+                    finalMainUrl = uploadResponse.fileUrl;
+                    setMainUrl(uploadResponse.fileUrl);
+                } else {
+                    throw new Error('Failed to upload main image');
                 }
+            }
+
+            // Upload multiple images if they're new
+            if (selectedFiles.length > 0) {
+                const uploadedUrls = [];
+                for (const file of selectedFiles) {
+                    const formData = new FormData();
+                    const uniqueFilename = Date.now() + "-" + file.name;
+                    formData.append("file", file, uniqueFilename);
+
+                    const uploadResponse = await dispatch(FileUpload(formData)).unwrap();
+                    if (uploadResponse?.fileUrl) {
+                        uploadedUrls.push(uploadResponse.fileUrl);
+                    }
+                }
+                if (uploadedUrls.length > 0) {
+                    finalFileUrls = uploadedUrls;
+                    setFileUrls(uploadedUrls);
+                }
+            }
+
+            const jsonObject = {
+                name: data?.name,
+                color: data.color,
+                category: data.category,
+                price: data.price,
+                totalItems: data.totalItems,
+                availableItems: data.availableItems,
+                url: finalMainUrl,
+                images: finalFileUrls,
+                description: data.description,
+                brandName: data.brandName,
+                modelNo: data.modelNo,
+                productID: data.productID,
+                frameWidth: data.frameWidth,
+                frameHeight: data.frameHeight,
+                frameDimention: data.frameDimention,
+                frameColor: data.frameColor,
+                lensColor: data.lensColor,
+                templeColor: data.templeColor,
+                frameMaterial: data.frameMaterial,
+                lens: data.lens,
+                powerSunglasses: data.powerSunglasses,
+                gender: data.gender,
+                warranty: data.warranty
+            };
+
+            if (id) {
+                const response = await dispatch(UpdateProductById({ id, data: jsonObject })).unwrap();
+                if (response.status == 200) {
+                    toast.success('Product updated successfully!', {
+                        style: {
+                            marginTop: '100px',
+                            background: '#52c41a',
+                            color: '#fff',
+                        },
+                    });
+                    router.push("/showcat");
+                    setIsLoading(false);
+                }
+            } else {
+                const response = await dispatch(AddProduct(jsonObject)).unwrap();
+                if (response.status == 200) {
+                    toast.success('Product added successfully!', {
+                        style: {
+                            marginTop: '100px',
+                            background: '#52c41a',
+                            color: '#fff',
+                        },
+                    });
+                    router.push("/showcat");
+                    setIsLoading(false);
+                }
+            }
+        } catch (error) {
+            toast.error('Failed to process product. Please try again.', {
+                style: {
+                    marginTop: '100px',
+                    background: '#ff4d4f',
+                    color: '#fff',
+                },
             });
-        } else {
-            dispatch(AddProduct(jsonObject)).then((response) => {
-                console.log("res", response)
-                setIsLoading(false)
-            }).catch((error) => {
-                console.log("EE", error)
-                setIsLoading(false)
-            })
+            console.error("Error submitting form:", error);
+        } finally {
+            setIsLoading(false);
         }
-
-    }
-
-
+    };
 
     return (
         <div className={styles.main}>
+            <Toaster
+                position="top-center"
+                toastOptions={{
+                    style: {
+                        marginTop: '100px',
+                        background: '#333',
+                        color: '#fff',
+                    },
+                    duration: 3000,
+                    error: {
+                        duration: 120000,
+                        style: {
+                            background: '#ff4d4f',
+                            color: '#fff',
+                            marginTop: '100px',
+                        },
+                    },
+                    success: {
+                        duration: 3000,
+                        style: {
+                            background: '#52c41a',
+                            color: '#fff',
+                            marginTop: '100px',
+                        },
+                    },
+                }}
+            />
             {IsLoading && <div className="spinnerContainer">
                 <div className="spinner"></div>
             </div>}
 
-
             <div className={styles.inner}>
                 <form onSubmit={handleSubmit(submitHandler)} >
-
 
                     <ComponentCard title="Add Product" className={styles.form}>
                         <div className={styles.devide}>
@@ -281,9 +385,6 @@ export default function Page() {
                                         error={!!errors.name}
                                         hint={errors.name?.message}
                                     />
-
-
-
                                 </div>
                                 <div>
                                     <Label>Color</Label>
@@ -349,7 +450,6 @@ export default function Page() {
                                     />
                                 </div>
                                 <div>
-
                                     <RadioButtons
                                         title="Gender"
                                         name="gender"
@@ -360,10 +460,8 @@ export default function Page() {
                                             { value: "Male", label: "Male" },
                                             { value: "Female", label: "Female" },
                                             { value: "Unisex", label: "Unisex" },
-
                                         ]}
                                     />
-
                                 </div>
                                 <div>
                                     <Label>frameWidth</Label>
@@ -390,8 +488,6 @@ export default function Page() {
                                         </span>
                                     </div>
                                 </div>
-
-
                             </div>
                             <div className={styles.right}>
                                 <div>
@@ -451,7 +547,6 @@ export default function Page() {
                                     />
                                 </div>
                                 <div>
-
                                     <RadioButtons
                                         title="Power Sunglasses"
                                         name="powerSunglasses"
@@ -479,21 +574,19 @@ export default function Page() {
                                         hint={errors.image?.message}
                                     />
                                 </div>
-                                {
-                                    MainUrl != null && (
-                                        <div className={styles.imageContainer}>
-                                            <div className={styles.imageWrapper}>
-                                                <Image
-                                                    alt="product"
-                                                    src={MainUrl}
-                                                    width={200}
-                                                    height={200}
-                                                    style={{ objectFit: 'cover' }}
-                                                />
-                                            </div>
+                                {localMainUrl && (
+                                    <div className={styles.imageContainer}>
+                                        <div className={styles.imageWrapper}>
+                                            <Image
+                                                alt="product"
+                                                src={localMainUrl}
+                                                width={200}
+                                                height={200}
+                                                style={{ objectFit: 'cover' }}
+                                            />
                                         </div>
-                                    )
-                                }
+                                    </div>
+                                )}
 
                                 <div>
                                     <Label>Upload Images</Label>
@@ -505,40 +598,27 @@ export default function Page() {
                                     />
                                 </div>
                                 <div className={styles.containerWrapper}>
-
-                                    {
-
-                                        FileUrls?.length > 0 &&
-                                        FileUrls?.map((item, index) => {
-                                            return (
-
-                                                <div key={index} className={styles.imageContainer}>
-                                                    <div className={styles.imageWrapper}>
-                                                        <Image
-                                                            alt="product"
-                                                            src={item}
-                                                            width={200}
-                                                            height={200}
-                                                            style={{ objectFit: 'cover' }}
-                                                        />
-                                                    </div>
-
+                                    {localFileUrls?.length > 0 &&
+                                        localFileUrls?.map((item, index) => (
+                                            <div key={index} className={styles.imageContainer}>
+                                                <div className={styles.imageWrapper}>
+                                                    <Image
+                                                        alt="product"
+                                                        src={item}
+                                                        width={200}
+                                                        height={200}
+                                                        style={{ objectFit: 'cover' }}
+                                                    />
                                                 </div>
-
-
-                                            )
-                                        })
-                                    }
+                                            </div>
+                                        ))}
                                 </div>
                             </div>
-
                         </div>
-
 
                         <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-md">
                             Submit
                         </button>
-
                     </ComponentCard>
                 </form>
             </div>

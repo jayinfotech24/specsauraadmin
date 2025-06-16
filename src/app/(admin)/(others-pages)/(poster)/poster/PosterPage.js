@@ -16,15 +16,17 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import Button from '@/components/ui/button/Button';
 
+
 import styles from "../../../../../styles/poster.module.css"
 import GlobalLoading from '../../../../../components/common/GlobalLoading';
 
 export default function PosterForm() {
-    const [FileUrl, setFileUrl] = useState(null)
-    const dispatch = useDispatch()
-    const [IsLoading, setIsLoading] = useState(false)
-    const [Url, setUrl] = useState(null)
-    const router = useRouter()
+    const [selectedFile, setSelectedFile] = useState(null);
+
+    const dispatch = useDispatch();
+    const [IsLoading, setIsLoading] = useState(false);
+    const [Url, setUrl] = useState(null);
+    const router = useRouter();
 
     const searchParams = useSearchParams();
     const id = searchParams.get('id');
@@ -43,29 +45,40 @@ export default function PosterForm() {
                 const height = this.height;
 
                 if (width < 1000 || height < 500) {
-                    toast.error(`Image dimensions must be at least 1000x500 pixels. Current dimensions: ${width}x${height}`);
+                    toast.error(`Image dimensions must be at least 1000x500 pixels. Current dimensions: ${width}x${height}`, {
+
+                        style: {
+                            marginTop: '100px',
+                            background: '#ff4d4f',
+                            color: '#fff',
+                        },
+                    });
                     return;
                 }
 
-                const formData = new FormData();
-                const uniqueFilename = Date.now() + "-" + file.name;
-                formData.append("file", file, uniqueFilename);
+                // Create local URL for preview
+                const localUrl = URL.createObjectURL(file);
+                setUrl(localUrl); // Set local URL for preview
+                setSelectedFile(file);
+                setValue("file", file, { shouldValidate: true });
+            };
 
-                dispatch(FileUpload(formData)).then((response) => {
-                    if (response.payload?.fileUrl) {
-                        setFileUrl(response.payload.fileUrl);
-                        setUrl(response.payload.fileUrl);
-                        setValue("file", file, { shouldValidate: true });
-                        toast.success('Image uploaded successfully!');
-                    }
-                }).catch((error) => {
-                    toast.error('Failed to upload image. Please try again.', error);
-                });
+            img.onerror = () => {
+                toast.error('Invalid image file. Please try again.');
             };
 
             img.src = URL.createObjectURL(file);
         }
     };
+
+    // Clean up local URL when component unmounts
+    useEffect(() => {
+        return () => {
+            if (Url && Url.startsWith('blob:')) {
+                URL.revokeObjectURL(Url);
+            }
+        };
+    }, [Url]);
 
     const schema = Yup.object().shape({
         title: Yup.string().required("Title is required").min(3, "Title must be at least 3 characters"),
@@ -110,28 +123,48 @@ export default function PosterForm() {
 
     const submitHandler = async (data) => {
         setIsLoading(true);
+        if (!selectedFile && !id) {
+            toast.error('Please upload an image');
+            setIsLoading(false);
+            return;
+        }
+
         try {
+            let finalUrl = Url; // Use existing URL if updating
+
+            // Only upload file if it's a new file or new poster
+            if (selectedFile && (!id || selectedFile !== Url)) {
+                const formData = new FormData();
+                const uniqueFilename = Date.now() + "-" + selectedFile.name;
+                formData.append("file", selectedFile, uniqueFilename);
+
+                const uploadResponse = await dispatch(FileUpload(formData)).unwrap();
+                if (uploadResponse?.fileUrl) {
+                    finalUrl = uploadResponse.fileUrl;
+
+                    setUrl(uploadResponse.fileUrl);
+                } else {
+                    throw new Error('Failed to upload image');
+                }
+            }
+
             const jsonObject = {
-                url: FileUrl || Url,
+                url: finalUrl,
                 title: data.title,
                 description: data.description
             };
 
             if (id) {
                 const response = await dispatch(UpdatePoster({ id, data: jsonObject })).unwrap();
-                if (response.status === 200) {
+                if (response.status == 200) {
                     toast.success('Poster updated successfully!');
-                    setTimeout(() => {
-                        router.push('/showposter');
-                    }, 1500);
+                    router.push('/showposter');
                 }
             } else {
                 const response = await dispatch(AddPoster(jsonObject)).unwrap();
-                if (response.status === 200) {
+                if (response.status == 200) {
                     toast.success('Poster added successfully!');
-                    setTimeout(() => {
-                        router.push('/showposter');
-                    }, 1500);
+                    router.push('/showposter');
                 }
             }
         } catch (error) {
@@ -144,6 +177,7 @@ export default function PosterForm() {
 
     return (
         <div className={styles.main}>
+
             {IsLoading && <GlobalLoading />}
             <div className={styles.inner}>
                 <form onSubmit={handleSubmit(submitHandler)}>

@@ -17,8 +17,9 @@ import FileInput from '@/components/form/input/FileInput';
 import { FileUpload, AddBlog, GetBlogById, UpdateBlog } from '@/store/authSlice';
 
 export default function BlogClientPage() {
+    const [selectedFile, setSelectedFile] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [fileUrl, setFileUrl] = useState(null);
+
     const [url, setUrl] = useState(null);
     const dispatch = useDispatch();
     const router = useRouter();
@@ -59,61 +60,106 @@ export default function BlogClientPage() {
                 toast.error('Please upload an image file');
                 return;
             }
-            setValue("file", file, { shouldValidate: true });
-            const formData = new FormData();
-            const uniqueFilename = Date.now() + "-" + file.name;
-            formData.append("file", file, uniqueFilename);
-            dispatch(FileUpload(formData)).then((response) => {
-                if (response.payload && response.payload.fileUrl) {
-                    setUrl(response.payload.fileUrl);
-                    setFileUrl(response.payload.fileUrl);
-                    toast.success('Image uploaded successfully!');
-                }
-            }).catch((error) => {
-                toast.error('Failed to upload image. Please try again.', error);
-            });
+
+            // Check file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                toast.error('File size should be less than 5MB');
+                return;
+            }
+
+            const img = new window.Image();
+            img.onload = function () {
+
+
+                // Validate image dimensions
+                // if (width < 800 || height < 400) {
+                //     toast.error(`Image dimensions must be at least 800x400 pixels. Current dimensions: ${width}x${height}`);
+                //     return;
+                // }
+
+                // Create local URL for preview
+                const localUrl = URL.createObjectURL(file);
+                setUrl(localUrl); // Set local URL for preview
+                setSelectedFile(file);
+                setValue("file", file, { shouldValidate: true });
+            };
+
+            img.onerror = () => {
+                toast.error('Invalid image file. Please try again.');
+            };
+
+            img.src = URL.createObjectURL(file);
         }
     };
 
+    // Clean up local URL when component unmounts
+    useEffect(() => {
+        return () => {
+            if (url && url.startsWith('blob:')) {
+                URL.revokeObjectURL(url);
+            }
+        };
+    }, [url]);
+
     const submitHandler = async (data) => {
         setIsLoading(true);
+        if (!selectedFile && !id) {
+            toast.error('Please upload an image');
+            return;
+        }
+
+
         try {
+            let finalUrl = url; // Use existing URL if updating
+
+            // Only upload file if it's a new file or new blog
+            if (selectedFile && (!id || selectedFile !== url)) {
+                const formData = new FormData();
+                const uniqueFilename = Date.now() + "-" + selectedFile.name;
+                formData.append("file", selectedFile, uniqueFilename);
+
+                const uploadResponse = await dispatch(FileUpload(formData)).unwrap();
+                if (uploadResponse?.fileUrl) {
+                    finalUrl = uploadResponse.fileUrl;
+
+                    setUrl(uploadResponse.fileUrl);
+                } else {
+                    throw new Error('Failed to upload image');
+                }
+            }
+
             const dataPayload = {
                 title: data.title,
                 description: data.description,
                 writerName: data.writerName,
-                url: fileUrl,
-
-            }
+                url: finalUrl,
+            };
 
             if (id) {
-                dispatch(UpdateBlog({ id, data: dataPayload })).then((response) => {
-                    console.log("response", response);
-                    if (response.payload.status == 200) {
-                        toast.success('Blog updated successfully!');
-                        setTimeout(() => {
-                            router.push("/showblog");
-                        }, 1500);
-                    }
-                }).catch((error) => {
-                    toast.error('Failed to update blog. Please try again.', error);
+                const response = await dispatch(UpdateBlog({ id, data: dataPayload })).unwrap();
+                console.log("Response", response);
+                if (response.status == 200) {
+
+                    toast.success('Blog updated successfully!');
+
+                    router.push("/showblog");
                     setIsLoading(false);
-                });
+
+                }
             } else {
-                dispatch(AddBlog(dataPayload)).then((res) => {
-                    console.log("res", res);
-                    if (res.payload.status == 200) {
-                        toast.success('Blog created successfully!');
-                        setTimeout(() => {
-                            router.push("/showblog");
-                        }, 1500);
-                    }
-                }).catch((error) => {
-                    toast.error('Failed to create blog. Please try again.', error);
-                });
+                const response = await dispatch(AddBlog(dataPayload)).unwrap();
+                console.log("Response", response);
+                if (response.status == 200) {
+
+                    toast.success('Blog created successfully!');
+
+                    router.push("/showblog");
+                    setIsLoading(false);
+
+                }
             }
         } catch (error) {
-            toast.error('Failed to process blog. Please try again.');
+            toast.error(error.message || 'Failed to process blog. Please try again.');
             console.error("Error submitting form:", error);
         } finally {
             setIsLoading(false);

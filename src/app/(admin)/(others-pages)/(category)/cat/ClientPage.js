@@ -19,14 +19,16 @@ import toast from 'react-hot-toast';
 
 export default function Index() {
 
-    const [FileUrl, setFileUrl] = useState(null)
-    const dispatch = useDispatch()
-    const [IsLoading, setIsLoding] = useState(false)
-    const [Url, setUrl] = useState(null)
-    const router = useRouter()
+    const [selectedFile, setSelectedFile] = useState(null);
+
+    const dispatch = useDispatch();
+    const [IsLoading, setIsLoding] = useState(false);
+    const [Url, setUrl] = useState(null);
+    const router = useRouter();
 
     const searchParams = useSearchParams();
-    const id = searchParams.get('id'); // Safe to call directly
+    const id = searchParams.get('id');
+
     const handleFileChange = (event) => {
         const file = event.target.files?.[0];
         if (file) {
@@ -34,22 +36,23 @@ export default function Index() {
                 toast.error('Please upload an image file');
                 return;
             }
+
+            // Create local URL for preview
+            const localUrl = URL.createObjectURL(file);
+            setUrl(localUrl); // Set local URL for preview
+            setSelectedFile(file);
             setValue("file", file, { shouldValidate: true });
-            const formData = new FormData();
-            const uniqueFilename = Date.now() + "-" + file.name;
-            formData.append("file", file, uniqueFilename);
-            dispatch(FileUpload(formData)).then((response) => {
-                if (response.payload && response.payload.fileUrl) {
-                    setUrl(response.payload.fileUrl);
-                    setFileUrl(response.payload.fileUrl);
-                    toast.success('Image uploaded successfully!');
-                }
-            }).catch((error) => {
-                toast.error('Failed to upload image. Please try again.', error);
-            });
         }
     };
 
+    // Clean up local URL when component unmounts
+    useEffect(() => {
+        return () => {
+            if (Url && Url.startsWith('blob:')) {
+                URL.revokeObjectURL(Url);
+            }
+        };
+    }, [Url]);
 
     const schema = Yup.object().shape({
         name: Yup.string()
@@ -63,11 +66,6 @@ export default function Index() {
         }),
     });
 
-
-
-
-
-
     const {
         register,
         handleSubmit,
@@ -78,50 +76,61 @@ export default function Index() {
         context: { id: id } // Pass the id to the validation context
     });
 
-
     console.log("Errors", errors)
 
-    const submitHandler = (data) => {
-        setIsLoding(true)
+    const submitHandler = async (data) => {
+        setIsLoding(true);
+        try {
+            let finalUrl = Url; // Use existing URL if updating
 
-        const jsonObject = {
-            url: FileUrl,
-            title: data.name,
-            description: data.description
-        }
-        console.log("Object", jsonObject)
-        if (id) {
-            dispatch(UpdateCategoryId({ id, data: jsonObject })).then((response) => {
-                console.log("ResU", response);
-                if (response.payload.status === 200) {
+            // Only upload file if it's a new file or new category
+            if (selectedFile && (!id || selectedFile !== Url)) {
+                const formData = new FormData();
+                const uniqueFilename = Date.now() + "-" + selectedFile.name;
+                formData.append("file", selectedFile, uniqueFilename);
+
+                const uploadResponse = await dispatch(FileUpload(formData)).unwrap();
+                if (uploadResponse?.fileUrl) {
+                    finalUrl = uploadResponse.fileUrl;
+
+                    setUrl(uploadResponse.fileUrl);
+                } else {
+                    throw new Error('Failed to upload image');
+                }
+            }
+
+            const jsonObject = {
+                url: finalUrl,
+                title: data.name,
+                description: data.description
+            };
+
+            if (id) {
+                const response = await dispatch(UpdateCategoryId({ id, data: jsonObject })).unwrap();
+                console.log("Response", response)
+                if (response.status == 200) {
                     toast.success('Category updated successfully!');
-                    setTimeout(() => {
-                        router.push("/showcat");
-                    }, 1500);
+
+                    router.push("/showcat");
+                    setIsLoding(false);
                 }
-            }).catch((error) => {
-                toast.error('Failed to update category. Please try again.', error);
-                setIsLoding(false);
-            });
-        } else {
-            dispatch(AddCategory(jsonObject)).then((response) => {
-                console.log("Res", response)
-                if (response.payload.status == 200) {
+            } else {
+                const response = await dispatch(AddCategory(jsonObject)).unwrap();
+                console.log("Response", response)
+                if (response.status == 200) {
                     toast.success('Category added successfully!');
-                    setTimeout(() => {
-                        router.push("/showcat");
-                    }, 1500);
+
+                    router.push("/showcat");
+                    setIsLoding(false);
                 }
-                setIsLoding(false)
-            }).catch((error) => {
-                toast.error('Failed to add category. Please try again.', error);
-                setIsLoding(false);
-            })
+            }
+        } catch (error) {
+            toast.error(error.message || 'Failed to process category. Please try again.');
+            console.error("Error submitting form:", error);
+        } finally {
+            setIsLoding(false);
         }
-
-
     };
-
 
     const GetCategoryById = useCallback((id) => {
         dispatch(CategoryDetail(id)).then((response) => {
