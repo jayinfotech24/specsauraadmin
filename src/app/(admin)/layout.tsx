@@ -1,7 +1,7 @@
 "use client";
 
 import { useSidebar } from "@/context/SidebarContext";
-import AppHeader from "@/layout/AppHeader";
+
 import AppSidebar from "@/layout/AppSidebar";
 import Backdrop from "@/layout/Backdrop";
 import GlobalLoading from "@/components/common/GlobalLoading";
@@ -77,7 +77,7 @@ export default function AdminLayout({
         {isLoading && <GlobalLoading />}
 
         {/* Header */}
-        <AppHeader />
+        {/* <AppHeader /> */}
 
         {/* Page Content */}
         <div className="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">

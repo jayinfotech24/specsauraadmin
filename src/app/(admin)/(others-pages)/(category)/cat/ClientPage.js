@@ -153,7 +153,8 @@ export default function Index() {
     }, [GetCategoryById, id])
     return (
         <div className={styles.main}>
-            {IsLoading && <GlobalLoading />
+            {
+                IsLoading && <GlobalLoading />
             }
             <div className={styles.inner}>
                 <form onSubmit={handleSubmit(submitHandler)}>
