@@ -333,6 +333,99 @@ export const GetBlogById = createAsyncThunk("api/GetBlogById", async (id, { reje
         return rejectWithValue(error.response?.data || "Something went wrong");
     }
 })
+export const AddLensType = createAsyncThunk("api/Addlens", async (credentials, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.post(`${Appapis.Basurl}${Appapis.createLens}`, credentials);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+export const GetAllLens = createAsyncThunk("api/GetLens", async (credentials, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.get(`${Appapis.Basurl}${Appapis.getLens}`);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+export const GetSingleLense = createAsyncThunk("api/getSingleLens", async (id, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.get(`${Appapis.Basurl}${Appapis.getSingleLens(id)}`);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+export const DeleteLens = createAsyncThunk("api/deletelens", async (id, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.delete(`${Appapis.Basurl}${Appapis.deleteLense(id)}`);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+export const GetCoating = createAsyncThunk("api/getCoating", async (credentials, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.get(`${Appapis.Basurl}${Appapis.getCoating}`);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+export const AddCoatings = createAsyncThunk("api/addCoating", async (credentials, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.post(`${Appapis.Basurl}${Appapis.addCoating}`, credentials);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+export const GetSingleCoating = createAsyncThunk("api/getSingleCoating", async (id, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.get(`${Appapis.Basurl}${Appapis.getSingleCoating(id)}`);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+
+export const UpdateCoating = createAsyncThunk("api/updateCoating", async ({ id, data }, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.patch(`${Appapis.Basurl}${Appapis.updateCoating(id)}`, data);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+
+export const DeleteCoating = createAsyncThunk("api/deleteCoating", async (id, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.delete(`${Appapis.Basurl}${Appapis.deleteCoating(id)}`);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+
+export const UpdateLense = createAsyncThunk("api/updateLense", async ({ id, data }, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.patch(`${Appapis.Basurl}${Appapis.updateLense(id)}`, data);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
 
 const AuthSlice = createSlice({
     name: "auth",
@@ -688,7 +781,106 @@ const AuthSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
-
+            .addCase(AddLensType.pending, (state) => {
+                state.loading = true
+            })
+            .addCase(AddLensType.fulfilled, (state,) => {
+                state.loading = false;
+            })
+            .addCase(AddLensType.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(GetAllLens.pending, (state) => {
+                state.loading = true
+            })
+            .addCase(GetAllLens.fulfilled, (state,) => {
+                state.loading = false;
+            })
+            .addCase(GetAllLens.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(GetSingleLense.pending, (state) => {
+                state.loading = true
+            })
+            .addCase(GetSingleLense.fulfilled, (state,) => {
+                state.loading = false;
+            })
+            .addCase(GetSingleLense.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(DeleteLens.pending, (state) => {
+                state.loading = true
+            })
+            .addCase(DeleteLens.fulfilled, (state,) => {
+                state.loading = false;
+            })
+            .addCase(DeleteLens.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(GetCoating.pending, (state) => {
+                state.loading = true
+            })
+            .addCase(GetCoating.fulfilled, (state,) => {
+                state.loading = false;
+            })
+            .addCase(GetCoating.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(AddCoatings.pending, (state) => {
+                state.loading = true
+            })
+            .addCase(AddCoatings.fulfilled, (state,) => {
+                state.loading = false;
+            })
+            .addCase(AddCoatings.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(GetSingleCoating.pending, (state) => {
+                state.loading = true
+            })
+            .addCase(GetSingleCoating.fulfilled, (state,) => {
+                state.loading = false;
+            })
+            .addCase(GetSingleCoating.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(UpdateCoating.pending, (state) => {
+                state.loading = true
+            })
+            .addCase(UpdateCoating.fulfilled, (state,) => {
+                state.loading = false;
+            })
+            .addCase(UpdateCoating.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(DeleteCoating.pending, (state) => {
+                state.loading = true
+            })
+            .addCase(DeleteCoating.fulfilled, (state,) => {
+                state.loading = false;
+            })
+            .addCase(DeleteCoating.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(UpdateLense.pending, (state) => {
+                state.loading = true
+            })
+            .addCase(UpdateLense.fulfilled, (state,) => {
+                state.loading = false;
+            })
+            .addCase(UpdateLense.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
 
 
     }

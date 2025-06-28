@@ -112,6 +112,21 @@ const navItems: NavItem[] = [
     { name: "Show Blog", path: "/showblog", pro: false }
     ],
   },
+  {
+    name: "Lens",
+    icon: <PageIcon />,
+    subItems: [{ name: "Add LensType", path: "/lens", pro: false },
+    { name: "Show Lens", path: "/showlens", pro: false }
+    ],
+  },
+  {
+    name: "Coating",
+    icon: <PageIcon />,
+    subItems: [{ name: "Add Coating", path: "/coating", pro: false },
+    { name: "Show Coating", path: "/showcoating", pro: false }
+    ],
+  }
+
   // {
   //   name: "demo",
   //   icon: <PageIcon />,

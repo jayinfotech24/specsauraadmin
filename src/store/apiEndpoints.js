@@ -1,5 +1,6 @@
 const Appapis = {
-    Basurl: "https://api.specsaura.com/api",
+    // Basurl: "https://api.specsaura.com/api",
+    Basurl: "https://specsauradataplazma.vercel.app/api",
     signIn: "/admin/login",
     addCategory: "/category",
     fileUpload: "/upload",
@@ -31,6 +32,16 @@ const Appapis = {
     updateBlog: (id) => `/blog/${id}`,
     deleteBlog: (id) => `/blog/${id}`,
     getBlogById: (id) => `/blog/${id}`,
+    createLens: `/lens`,
+    getLens: `/lens`,
+    getSingleLens: (id) => `/lens/single/${id}`,
+    deleteLense: (id) => `/lens/${id}`,
+    getCoating: `/coating`,
+    addCoating: `/coating`,
+    getSingleCoating: (id) => `/coating/single/${id}`,
+    updateCoating: (id) => `/coating/${id}`,
+    deleteCoating: (id) => `/coating/${id}`,
+    updateLense: (id) => `/lens/${id}`
 }
 
 export default Appapis
