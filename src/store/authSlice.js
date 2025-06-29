@@ -444,6 +444,23 @@ const AuthSlice = createSlice({
         }
     },
     extraReducers: (builder) => {
+        // Common function to handle async thunk states
+        const handleAsyncThunk = (thunk, builder) => {
+            builder
+                .addCase(thunk.pending, (state) => {
+                    state.loading = true;
+                    state.error = null;
+                })
+                .addCase(thunk.fulfilled, (state) => {
+                    state.loading = false;
+                })
+                .addCase(thunk.rejected, (state, action) => {
+                    state.loading = false;
+                    state.error = action.payload;
+                });
+        };
+
+        // Handle Login with special case for fulfilled
         builder
             .addCase(Login.pending, (state) => {
                 state.loading = true;
@@ -461,430 +478,23 @@ const AuthSlice = createSlice({
             .addCase(Login.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
-            })
-            .addCase(AddCategory.pending, (state) => {
-                state.loading = true
+            });
 
-            })
-            .addCase(AddCategory.fulfilled, (state,) => {
-                state.loading = false;
+        // Handle all other async thunks using the common function
+        const asyncThunks = [
+            AddCategory, FileUpload, AddProduct, GetCategory, AddPoster, AddVideo,
+            CategoryDetail, GetProductDetail, ProductById, UpdateCategoryId, UpdateProductById,
+            DeleteCategory, DeleteProduct, GetAllOrders, GetAllPosters, UpdatePoster,
+            DeletePoster, GetPosterById, GetAllVideos, GetVideoById, GetDashboardData,
+            UpdateVideo, DeleteVideo, UpdateOrderStatus, GetBlogList, AddBlog,
+            UpdateBlog, DeleteBlog, GetBlogById, AddLensType, GetAllLens,
+            GetSingleLense, DeleteLens, GetCoating, AddCoatings, GetSingleCoating,
+            UpdateCoating, DeleteCoating, UpdateLense
+        ];
 
-            })
-            .addCase(AddCategory.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(FileUpload.pending, (state) => {
-                state.loading = true
-
-            })
-            .addCase(FileUpload.fulfilled, (state,) => {
-                state.loading = false;
-
-            })
-            .addCase(FileUpload.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(AddProduct.pending, (state) => {
-                state.loading = true
-
-            })
-            .addCase(AddProduct.fulfilled, (state,) => {
-                state.loading = false;
-
-            })
-            .addCase(AddProduct.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(GetCategory.pending, (state) => {
-                state.loading = true
-
-            })
-            .addCase(GetCategory.fulfilled, (state,) => {
-                state.loading = false;
-
-            })
-            .addCase(GetCategory.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(AddPoster.pending, (state) => {
-                state.loading = true
-
-            })
-            .addCase(AddPoster.fulfilled, (state,) => {
-                state.loading = false;
-
-            })
-            .addCase(AddPoster.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(AddVideo.pending, (state) => {
-                state.loading = true
-
-            })
-            .addCase(AddVideo.fulfilled, (state,) => {
-                state.loading = false;
-
-            })
-            .addCase(AddVideo.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(CategoryDetail.pending, (state) => {
-                state.loading = true
-
-            })
-            .addCase(CategoryDetail.fulfilled, (state,) => {
-                state.loading = false;
-
-            })
-            .addCase(CategoryDetail.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(GetProductDetail.pending, (state) => {
-                state.loading = true
-
-            })
-            .addCase(GetProductDetail.fulfilled, (state,) => {
-                state.loading = false;
-
-            })
-            .addCase(GetProductDetail.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(ProductById.pending, (state) => {
-                state.loading = true
-
-            })
-            .addCase(ProductById.fulfilled, (state,) => {
-                state.loading = false;
-
-            })
-            .addCase(ProductById.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(UpdateCategoryId.pending, (state) => {
-                state.loading = true
-
-            })
-            .addCase(UpdateCategoryId.fulfilled, (state,) => {
-                state.loading = false;
-
-            })
-            .addCase(UpdateCategoryId.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(UpdateProductById.pending, (state) => {
-                state.loading = true
-
-            })
-            .addCase(UpdateProductById.fulfilled, (state,) => {
-                state.loading = false;
-
-            })
-            .addCase(UpdateProductById.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(DeleteCategory.pending, (state) => {
-                state.loading = true
-
-            })
-            .addCase(DeleteCategory.fulfilled, (state,) => {
-                state.loading = false;
-
-            })
-            .addCase(DeleteCategory.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(DeleteProduct.pending, (state) => {
-                state.loading = true
-
-            })
-            .addCase(DeleteProduct.fulfilled, (state,) => {
-                state.loading = false;
-
-            })
-            .addCase(DeleteProduct.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(GetAllOrders.pending, (state) => {
-                state.loading = true
-
-            })
-            .addCase(GetAllOrders.fulfilled, (state,) => {
-                state.loading = false;
-
-            })
-            .addCase(GetAllOrders.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(GetAllPosters.pending, (state) => {
-                state.loading = true
-
-            })
-            .addCase(GetAllPosters.fulfilled, (state,) => {
-                state.loading = false;
-            })
-            .addCase(GetAllPosters.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(UpdatePoster.pending, (state) => {
-                state.loading = true
-            })
-            .addCase(UpdatePoster.fulfilled, (state,) => {
-                state.loading = false;
-            })
-            .addCase(UpdatePoster.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(DeletePoster.pending, (state) => {
-                state.loading = true
-            })
-            .addCase(DeletePoster.fulfilled, (state,) => {
-                state.loading = false;
-            })
-            .addCase(DeletePoster.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(GetPosterById.pending, (state) => {
-                state.loading = true
-            })
-            .addCase(GetPosterById.fulfilled, (state,) => {
-                state.loading = false;
-            })
-            .addCase(GetPosterById.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(GetAllVideos.pending, (state) => {
-                state.loading = true
-            })
-            .addCase(GetAllVideos.fulfilled, (state,) => {
-                state.loading = false;
-            })
-            .addCase(GetAllVideos.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(GetVideoById.pending, (state) => {
-                state.loading = true
-            })
-            .addCase(GetVideoById.fulfilled, (state,) => {
-                state.loading = false;
-            })
-            .addCase(GetVideoById.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(GetDashboardData.pending, (state) => {
-                state.loading = true
-            })
-            .addCase(GetDashboardData.fulfilled, (state) => {
-                state.loading = false;
-            })
-            .addCase(GetDashboardData.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(UpdateVideo.pending, (state) => {
-                state.loading = true
-            })
-            .addCase(UpdateVideo.fulfilled, (state,) => {
-                state.loading = false;
-            })
-            .addCase(UpdateVideo.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(DeleteVideo.pending, (state) => {
-                state.loading = true
-            })
-            .addCase(DeleteVideo.fulfilled, (state,) => {
-                state.loading = false;
-            })
-            .addCase(DeleteVideo.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(UpdateOrderStatus.pending, (state) => {
-                state.loading = true
-            })
-            .addCase(UpdateOrderStatus.fulfilled, (state,) => {
-                state.loading = false;
-            })
-            .addCase(UpdateOrderStatus.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(GetBlogList.pending, (state) => {
-                state.loading = true
-            })
-            .addCase(GetBlogList.fulfilled, (state,) => {
-                state.loading = false;
-            })
-            .addCase(GetBlogList.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(AddBlog.pending, (state) => {
-                state.loading = true
-            })
-            .addCase(AddBlog.fulfilled, (state,) => {
-                state.loading = false;
-            })
-            .addCase(AddBlog.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(UpdateBlog.pending, (state) => {
-                state.loading = true
-            })
-            .addCase(UpdateBlog.fulfilled, (state,) => {
-                state.loading = false;
-            })
-            .addCase(UpdateBlog.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(DeleteBlog.pending, (state) => {
-                state.loading = true
-            })
-            .addCase(DeleteBlog.fulfilled, (state,) => {
-                state.loading = false;
-            })
-            .addCase(DeleteBlog.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(GetBlogById.pending, (state) => {
-                state.loading = true
-            })
-            .addCase(GetBlogById.fulfilled, (state,) => {
-                state.loading = false;
-            })
-            .addCase(GetBlogById.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(AddLensType.pending, (state) => {
-                state.loading = true
-            })
-            .addCase(AddLensType.fulfilled, (state,) => {
-                state.loading = false;
-            })
-            .addCase(AddLensType.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(GetAllLens.pending, (state) => {
-                state.loading = true
-            })
-            .addCase(GetAllLens.fulfilled, (state,) => {
-                state.loading = false;
-            })
-            .addCase(GetAllLens.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(GetSingleLense.pending, (state) => {
-                state.loading = true
-            })
-            .addCase(GetSingleLense.fulfilled, (state,) => {
-                state.loading = false;
-            })
-            .addCase(GetSingleLense.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(DeleteLens.pending, (state) => {
-                state.loading = true
-            })
-            .addCase(DeleteLens.fulfilled, (state,) => {
-                state.loading = false;
-            })
-            .addCase(DeleteLens.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(GetCoating.pending, (state) => {
-                state.loading = true
-            })
-            .addCase(GetCoating.fulfilled, (state,) => {
-                state.loading = false;
-            })
-            .addCase(GetCoating.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(AddCoatings.pending, (state) => {
-                state.loading = true
-            })
-            .addCase(AddCoatings.fulfilled, (state,) => {
-                state.loading = false;
-            })
-            .addCase(AddCoatings.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(GetSingleCoating.pending, (state) => {
-                state.loading = true
-            })
-            .addCase(GetSingleCoating.fulfilled, (state,) => {
-                state.loading = false;
-            })
-            .addCase(GetSingleCoating.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(UpdateCoating.pending, (state) => {
-                state.loading = true
-            })
-            .addCase(UpdateCoating.fulfilled, (state,) => {
-                state.loading = false;
-            })
-            .addCase(UpdateCoating.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(DeleteCoating.pending, (state) => {
-                state.loading = true
-            })
-            .addCase(DeleteCoating.fulfilled, (state,) => {
-                state.loading = false;
-            })
-            .addCase(DeleteCoating.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(UpdateLense.pending, (state) => {
-                state.loading = true
-            })
-            .addCase(UpdateLense.fulfilled, (state,) => {
-                state.loading = false;
-            })
-            .addCase(UpdateLense.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-
-
+        asyncThunks.forEach(thunk => handleAsyncThunk(thunk, builder));
     }
-})
+});
 
 export const { logout, clearError } = AuthSlice.actions;
 export default AuthSlice.reducer;

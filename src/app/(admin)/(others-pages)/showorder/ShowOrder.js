@@ -24,7 +24,8 @@ export default function BasicTableOne() {
         setIsLoading(true);
         try {
             const response = await dispatch(GetAllOrders()).unwrap();
-            if (response.status === 200) {
+            console.log("Res", response)
+            if (response.status == 200) {
                 setData(response.items);
                 toast.success('Orders loaded successfully!');
             }
@@ -43,20 +44,58 @@ export default function BasicTableOne() {
     const handlePrint = () => {
         if (!expandedOrder) return;
 
+        const calculateItemTotal = (item) => {
+            const productPrice = item.product?.price || 0;
+            const lensPrice = item.cart?.lensType?.price || 0;
+            const coatingPrice = item.cart?.lensCoating?.price || 0;
+            const quantity = item.quantity || 1;
+
+            const subtotal = productPrice + lensPrice + coatingPrice;
+            return {
+                productPrice,
+                lensPrice,
+                coatingPrice,
+                subtotal,
+                total: subtotal * quantity
+            };
+        };
+
+        const formatPrice = (price) => {
+            return `₹${price?.toLocaleString() || 0}`;
+        };
+
         const orderData = {
             orderId: expandedOrder._id,
             date: new Date(expandedOrder.createdAt).toLocaleDateString(),
             status: expandedOrder.status,
-            items: expandedOrder.items.map(item => ({
-                productID: {
-                    name: item.product?.name || 'N/A',
-                    price: item.product?.price || 0
-                }
-            })),
+            paymentStatus: expandedOrder.paymentStatus,
+            paymentMethod: expandedOrder.paymentMethod,
+            shippingAddress: expandedOrder.shippingAddress,
+            items: expandedOrder.items.map(item => {
+                const pricing = calculateItemTotal(item);
+                return {
+                    product: {
+                        name: item.product?.name || 'N/A',
+                        price: item.product?.price || 0,
+                        url: item.product?.url || ''
+                    },
+                    lensType: item.cart?.lensType ? {
+                        name: item.cart.lensType.name,
+                        type: item.cart.lensType.lensMainType,
+                        price: item.cart.lensType.price,
+                        description: item.cart.lensType.description
+                    } : null,
+                    lensCoating: item.cart?.lensCoating ? {
+                        title: item.cart.lensCoating.title,
+                        price: item.cart.lensCoating.price,
+                        description: item.cart.lensCoating.description
+                    } : null,
+                    quantity: item.quantity || 1,
+                    pricing: pricing
+                };
+            }),
             totalAmount: expandedOrder.totalAmount
         };
-
-        const subtotal = expandedOrder.totalAmount;
 
         const printWindow = window.open('', '_blank');
         printWindow.document.write(`
@@ -65,266 +104,359 @@ export default function BasicTableOne() {
             <head>
                 <title>Order Invoice - ${orderData.orderId}</title>
                 <style>
-                    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+                    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+                    * {
+                        margin: 0;
+                        padding: 0;
+                        box-sizing: border-box;
+                    }
                     body {
                         font-family: 'Poppins', sans-serif;
                         margin: 0;
                         padding: 20px;
                         color: #333;
+                        background: #fff;
                     }
                     .invoice {
                         max-width: 800px;
                         margin: 0 auto;
-                        padding: 20px;
-                        border: 1px solid #ddd;
+                        padding: 30px;
+                        border: 2px solid #ddd;
+                        background: #fff;
                     }
                     .header {
-                        margin-top: 20px;
                         text-align: center;
                         margin-bottom: 30px;
-                        border-bottom: 2px solid #ddd;
+                        border-bottom: 3px solid #2563eb;
                         padding-bottom: 20px;
                         position: relative;
                     }
-                    .header img {
-                        max-width: 150px;
-                        height: auto;
+                    .header h1 {
+                        color: #2563eb;
+                        font-size: 28px;
+                        font-weight: 700;
                         margin-bottom: 10px;
                     }
                     .header p {
                         color: #666;
                         margin: 5px 0;
-                    }
-                    .title {
-                        position: absolute;
-                        top: 20px;
-                        right: 20px;
-                        text-align: right;
                         font-size: 14px;
-                        color: #333;
-                        font-weight: 500;
                     }
-                    .orderId {
-                        position: absolute;
-                        top: 0;
-                        right: 0;
-                        text-align: right;
-                        font-size: 16px;
-                        color: #333;
-                        font-weight: 500;
-                    }
-                    .invoiceNumber {
+                    .order-info {
                         position: absolute;
                         top: 0;
                         right: 0;
                         text-align: right;
                         font-size: 14px;
+                    }
+                    .order-id {
+                        font-size: 18px;
+                        font-weight: 600;
+                        color: #2563eb;
+                        margin-bottom: 5px;
+                    }
+                    .order-date {
                         color: #666;
+                        margin-bottom: 5px;
                     }
-                    .invoiceNumber strong {
-                        display: block;
-                        color: #333;
-                        font-size: 16px;
+                    .status-badge {
+                        display: inline-block;
+                        padding: 4px 12px;
+                        border-radius: 20px;
+                        font-size: 12px;
+                        font-weight: 500;
+                        margin-bottom: 5px;
                     }
-                    .details {
-                        margin-bottom: 30px;
-                    }
+                    .status-pending { background: #fef3c7; color: #92400e; }
+                    .status-delivered { background: #d1fae5; color: #065f46; }
+                    .status-processing { background: #dbeafe; color: #1e40af; }
+                    
                     .details-grid {
                         display: grid;
-                        grid-template-columns: repeat(2, 1fr);
-                        gap: 20px;
-                        margin-bottom: 20px;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 30px;
+                        margin-bottom: 30px;
+                    }
+                    .detail-section {
+                        background: #f8fafc;
+                        padding: 20px;
+                        border-radius: 8px;
+                        border: 1px solid #e2e8f0;
+                    }
+                    .detail-section h3 {
+                        color: #1e293b;
+                        font-size: 16px;
+                        font-weight: 600;
+                        margin-bottom: 15px;
+                        border-bottom: 2px solid #e2e8f0;
+                        padding-bottom: 8px;
                     }
                     .detail-item {
-                        margin-bottom: 10px;
-                    }
-                    .detail-item strong {
-                        display: block;
-                        color: #666;
+                        margin-bottom: 8px;
                         font-size: 14px;
                     }
-                    .items {
-                        margin-bottom: 30px;
-                        overflow-x: auto;
-                    }
-                    .items table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        min-width: 300px;
-                    }
-                    .items th, .items td {
-                        padding: 12px;
-                        text-align: left;
-                        border-bottom: 1px solid #ddd;
-                    }
-                    .items th {
-                        background-color: #f8f9fa;
+                    .detail-label {
                         font-weight: 500;
+                        color: #475569;
+                        display: inline-block;
+                        width: 120px;
                     }
-                    .summary {
-                        margin-top: 30px;
-                        border-top: 2px solid #ddd;
-                        padding-top: 20px;
+                    .detail-value {
+                        color: #1e293b;
+                        font-weight: 400;
                     }
-                    .summary-item {
+                    
+                    .items-section {
+                        margin-bottom: 30px;
+                    }
+                    .items-section h3 {
+                        color: #1e293b;
+                        font-size: 18px;
+                        font-weight: 600;
+                        margin-bottom: 20px;
+                        border-bottom: 2px solid #e2e8f0;
+                        padding-bottom: 10px;
+                    }
+                    .item {
+                        background: #f8fafc;
+                        border: 1px solid #e2e8f0;
+                        border-radius: 8px;
+                        padding: 20px;
+                        margin-bottom: 15px;
+                    }
+                    .item-header {
                         display: flex;
                         justify-content: space-between;
-                        margin-bottom: 10px;
+                        align-items: flex-start;
+                        margin-bottom: 15px;
                     }
-                    .total {
+                    .item-info {
+                        flex: 1;
+                    }
+                    .item-name {
+                        font-size: 16px;
                         font-weight: 600;
-                        font-size: 18px;
-                        margin-top: 20px;
-                        padding-top: 20px;
-                        border-top: 1px solid #ddd;
+                        color: #1e293b;
+                        margin-bottom: 5px;
                     }
+                    .item-quantity {
+                        font-size: 14px;
+                        color: #64748b;
+                    }
+                    .item-pricing {
+                        text-align: right;
+                        min-width: 200px;
+                    }
+                    .price-breakdown {
+                        background: #fff;
+                        border: 1px solid #e2e8f0;
+                        border-radius: 6px;
+                        padding: 12px;
+                        font-size: 13px;
+                    }
+                    .price-row {
+                        display: flex;
+                        justify-content: space-between;
+                        margin-bottom: 4px;
+                    }
+                    .price-row.total {
+                        border-top: 1px solid #e2e8f0;
+                        padding-top: 8px;
+                        margin-top: 8px;
+                        font-weight: 600;
+                        font-size: 14px;
+                        color: #2563eb;
+                    }
+                    
+                    .lens-details, .coating-details {
+                        background: #fff;
+                        border: 1px solid #e2e8f0;
+                        border-radius: 6px;
+                        padding: 10px;
+                        margin-top: 10px;
+                        font-size: 12px;
+                    }
+                    .lens-details h4, .coating-details h4 {
+                        font-weight: 600;
+                        color: #1e293b;
+                        margin-bottom: 5px;
+                    }
+                    .lens-details { border-left: 4px solid #64748b; }
+                    .coating-details { border-left: 4px solid #2563eb; }
+                    
+                    .summary {
+                        background: #f8fafc;
+                        border: 2px solid #e2e8f0;
+                        border-radius: 8px;
+                        padding: 20px;
+                        text-align: right;
+                    }
+                    .summary h3 {
+                        color: #1e293b;
+                        font-size: 18px;
+                        font-weight: 600;
+                        margin-bottom: 15px;
+                        text-align: center;
+                    }
+                    .total-amount {
+                        font-size: 24px;
+                        font-weight: 700;
+                        color: #2563eb;
+                        border-top: 2px solid #e2e8f0;
+                        padding-top: 15px;
+                        margin-top: 15px;
+                    }
+                    
                     .footer {
                         text-align: center;
                         margin-top: 40px;
-                        color: #666;
-                        font-size: 14px;
+                        color: #64748b;
+                        font-size: 12px;
+                        border-top: 1px solid #e2e8f0;
+                        padding-top: 20px;
                     }
-
-                    @media (max-width: 768px) {
-                        body {
-                            padding: 10px;
-                        }
-                        .invoice {
-                            padding: 15px;
-                        }
-                        .header {
-                            margin-top: 10px;
-                            margin-bottom: 20px;
-                        }
-                        .header img {
-                            max-width: 120px;
-                        }
-                        .title {
-                            position: static;
-                            text-align: center;
-                            margin-bottom: 15px;
-                        }
-                        .details-grid {
-                            grid-template-columns: 1fr;
-                            gap: 15px;
-                        }
-                        .items th, .items td {
-                            padding: 8px;
-                            font-size: 14px;
-                        }
-                        .summary-item, .total {
-                            font-size: 16px;
-                        }
-                    }
-
-                    @media (max-width: 480px) {
-                        body {
-                            padding: 5px;
-                        }
-                        .invoice {
-                            padding: 10px;
-                        }
-                        .header img {
-                            max-width: 100px;
-                        }
-                        .items th, .items td {
-                            padding: 6px;
-                            font-size: 13px;
-                        }
-                        .summary-item, .total {
-                            font-size: 15px;
-                        }
-                        .footer {
-                            font-size: 12px;
-                        }
-                    }
-
+                    
                     @media print {
-                        body {
-                            padding: 0;
-                        }
-                        .invoice {
-                            border: none;
-                            padding: 0;
-                        }
-                        .header {
-                            margin-top: 0;
-                        }
+                        body { padding: 0; }
+                        .invoice { border: none; max-width: none; }
                     }
                 </style>
             </head>
             <body>
                 <div class="invoice">
                     <div class="header">
-                        <img src="/images/logo/logo2.png" alt="SpecsAura Logo" />
+                        <img src="/images/logo/logo2.png" alt="SpecsAura Logo" style="max-width: 150px; height: auto; margin-bottom: 10px;" />
+                        <p>Professional Eyewear Solutions</p>
                         <p>Your Vision, Our Priority</p>
+                        
+                        <div class="order-info">
+                            <div class="order-id">Order #${orderData.orderId.slice(-8)}</div>
+                            <div class="order-date">Date: ${orderData.date}</div>
+                       
+                        </div>
                     </div>
-                    
-                    <div class="details">
-                        <div class="details-grid">
+
+                    <div class="details-grid">
+                        <div class="detail-section">
+                            <h3>Shipping Address</h3>
                             <div class="detail-item">
-                                <strong>Order Number</strong>
-                                ${orderData.orderId}
+                                <span class="detail-label">Name:</span>
+                                <span class="detail-value">${orderData.shippingAddress?.fullName || 'N/A'}</span>
                             </div>
                             <div class="detail-item">
-                                <strong>Date</strong>
-                                ${orderData.date}
+                                <span class="detail-label">Address:</span>
+                                <span class="detail-value">${orderData.shippingAddress?.address || 'N/A'}</span>
                             </div>
                             <div class="detail-item">
-                                <strong>Status</strong>
-                                ${orderData.status}
+                                <span class="detail-label">City:</span>
+                                <span class="detail-value">${orderData.shippingAddress?.city || 'N/A'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">State:</span>
+                                <span class="detail-value">${orderData.shippingAddress?.state || 'N/A'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">ZIP:</span>
+                                <span class="detail-value">${orderData.shippingAddress?.zipCode || 'N/A'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Country:</span>
+                                <span class="detail-value">${orderData.shippingAddress?.country || 'N/A'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Phone:</span>
+                                <span class="detail-value">${orderData.shippingAddress?.phone || 'N/A'}</span>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <h3>Payment Information</h3>
+                            <div class="detail-item">
+                                <span class="detail-label">Method:</span>
+                                <span class="detail-value">${orderData.paymentMethod}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Status:</span>
+                                <span class="detail-value">${orderData.paymentStatus}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Order Status:</span>
+                                <span class="detail-value">${orderData.status}</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="items">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Item</th>
-                                    <th>Price</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${orderData.items.map(item => `
-                                    <tr>
-                                        <td>${item.productID?.name || 'Product Name'}</td>
-                                        <td>₹${item.productID?.price?.toLocaleString('en-IN') || '0'}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
+                    <div class="items-section">
+                        <h3>Order Items</h3>
+                        ${orderData.items.map(item => `
+                            <div class="item">
+                                <div class="item-header">
+                                    <div class="item-info">
+                                        <div class="item-name">${item.product.name}</div>
+                                        <div class="item-quantity">Quantity: ${item.quantity}</div>
+                                        
+                                        ${item.lensType ? `
+                                            <div class="lens-details">
+                                                <h4>Lens: ${item.lensType.name} (${item.lensType.type})</h4>
+                                                <p>${item.lensType.description}</p>
+                                            </div>
+                                        ` : ''}
+                                        
+                                        ${item.lensCoating ? `
+                                            <div class="coating-details">
+                                                <h4>Coating: ${item.lensCoating.title}</h4>
+                                                <p>${item.lensCoating.description}</p>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                    
+                                    <div class="item-pricing">
+                                        <div class="price-breakdown">
+                                            <div class="price-row">
+                                                <span>Product:</span>
+                                                <span>${formatPrice(item.pricing.productPrice)}</span>
+                                            </div>
+                                            <div class="price-row">
+                                                <span>Lens:</span>
+                                                <span>${formatPrice(item.pricing.lensPrice)}</span>
+                                            </div>
+                                            <div class="price-row">
+                                                <span>Coating:</span>
+                                                <span>${formatPrice(item.pricing.coatingPrice)}</span>
+                                            </div>
+                                            <div class="price-row">
+                                                <span>Subtotal:</span>
+                                                <span>${formatPrice(item.pricing.subtotal)}</span>
+                                            </div>
+                                            <div class="price-row total">
+                                                <span>Total (Qty: ${item.quantity}):</span>
+                                                <span>${formatPrice(item.pricing.total)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
                     </div>
 
                     <div class="summary">
-                        <div class="summary-item">
-                            <span>Subtotal</span>
-                            <span>₹${subtotal.toLocaleString('en-IN')}</span>
-                        </div>
-                        <div class="summary-item">
-                            <span>Shipping</span>
-                            <span>Free</span>
-                        </div>
-                        <div class="total">
-                            <span>Total Amount</span>
-                            <span>₹${subtotal.toLocaleString('en-IN')}</span>
+                        <h3>Order Summary</h3>
+                        <div class="total-amount">
+                            Total Amount: ${formatPrice(orderData.totalAmount)}
                         </div>
                     </div>
 
                     <div class="footer">
-                        <p>Thank you for shopping with us!</p>
+                        <p>Thank you for choosing SpecsAura!</p>
                         <p>For any queries, please contact our customer support.</p>
+                        <p>This is a computer-generated invoice.</p>
                     </div>
                 </div>
-                <script>
-                    window.onload = function() {
-                        window.print();
-                    }
-                </script>
             </body>
             </html>
         `);
         printWindow.document.close();
+        printWindow.print();
     };
 
     const handleStatusUpdate = async (order, newStatus) => {
@@ -365,6 +497,26 @@ export default function BasicTableOne() {
         setIsLoading(false);
     };
 
+    const calculateItemTotal = (item) => {
+        const productPrice = item.product?.price || 0;
+        const lensPrice = item.cart?.lensType?.price || 0;
+        const coatingPrice = item.cart?.lensCoating?.price || 0;
+        const quantity = item.quantity || 1;
+
+        const subtotal = productPrice + lensPrice + coatingPrice;
+        return {
+            productPrice,
+            lensPrice,
+            coatingPrice,
+            subtotal,
+            total: subtotal * quantity
+        };
+    };
+
+    const formatPrice = (price) => {
+        return `₹${price?.toLocaleString() || 0}`;
+    };
+
     useEffect(() => {
         GetOrderData()
     }, [GetOrderData])
@@ -391,6 +543,9 @@ export default function BasicTableOne() {
                                     </TableCell>
                                     <TableCell isHeader className="px-1.5 py-1.5 font-medium text-gray-500 text-start text-theme-xs">
                                         Total Amount
+                                    </TableCell>
+                                    <TableCell isHeader className="px-1.5 py-1.5 font-medium text-gray-500 text-start text-theme-xs">
+                                        Net Amount (after fee)
                                     </TableCell>
                                     <TableCell isHeader className="px-1.5 py-1.5 font-medium text-gray-500 text-start text-theme-xs">
                                         Status
@@ -444,6 +599,11 @@ export default function BasicTableOne() {
                                                 <TableCell className="px-1.5 py-1.5 text-start">
                                                     <span className="text-sm font-medium text-gray-800">
                                                         ₹{order.totalAmount}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell className="px-1.5 py-1.5 text-start">
+                                                    <span className="text-sm font-bold text-green-700">
+                                                        {formatPrice(order.totalAmount - (order.totalAmount * 0.02))}
                                                     </span>
                                                 </TableCell>
                                                 <TableCell className="px-1.5 py-1.5 text-start">
@@ -638,32 +798,81 @@ export default function BasicTableOne() {
                                         <h3 className="text-base font-medium text-gray-900 mb-1.5">Order Items</h3>
                                         <div className="space-y-2">
                                             {expandedOrder?.items && expandedOrder.items.length > 0 ? (
-                                                expandedOrder.items.map((item) => (
-                                                    <div key={item._id} className="bg-white rounded-lg p-2 shadow-sm">
-                                                        <div className="flex items-start space-x-2">
-                                                            <div className="w-14 h-14 relative flex-shrink-0">
-                                                                <Image
-                                                                    src={item.product?.url || '/placeholder.png'}
-                                                                    alt={item.product?.name || 'Product'}
-                                                                    fill
-                                                                    className="object-cover rounded-lg"
-                                                                />
-                                                            </div>
-                                                            <div className="flex-grow min-w-0">
-                                                                <h4 className="text-xs font-medium text-gray-900 truncate">{item.product?.name || 'N/A'}</h4>
-                                                                <div className="mt-0.5 space-y-0.5">
-                                                                    <p className="text-xs text-gray-600">Quantity: {item.quantity || 0}</p>
-                                                                    <p className="text-xs text-gray-600">Price: ₹{item.product?.price || 0}</p>
-                                                                    <p className="text-xs text-gray-600">
-                                                                        Subtotal: ₹{(item.quantity || 0) * (item.product?.price || 0)}
-                                                                    </p>
+                                                expandedOrder.items.map((item, index) => {
+                                                    const pricing = calculateItemTotal(item);
+                                                    return (
+                                                        <div key={item._id || index} className="bg-white rounded-lg p-2 shadow-sm">
+                                                            <div className="flex items-start space-x-2">
+                                                                <div className="w-14 h-14 relative flex-shrink-0">
+                                                                    <Image
+                                                                        src={item.product?.url || '/placeholder.png'}
+                                                                        alt={item.product?.name || 'Product'}
+                                                                        fill
+                                                                        className="object-cover rounded-md"
+                                                                    />
+                                                                </div>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <h4 className="text-sm font-medium text-gray-900 truncate">
+                                                                        {item.product?.name || 'N/A'}
+                                                                    </h4>
+                                                                    <p className="text-xs text-gray-500">Qty: {item.quantity || 1}</p>
+
+                                                                    {/* Lens Details */}
+                                                                    {item.cart?.lensType && (
+                                                                        <div className="mt-1 p-1 bg-gray-50 rounded text-xs">
+                                                                            <p className="font-medium text-gray-700">
+                                                                                Lens: {item.cart.lensType.name} ({item.cart.lensType.lensMainType})
+                                                                            </p>
+                                                                            <p className="text-gray-500">{item.cart.lensType.description}</p>
+                                                                        </div>
+                                                                    )}
+
+                                                                    {/* Coating Details */}
+                                                                    {item.cart?.lensCoating && (
+                                                                        <div className="mt-1 p-1 bg-blue-50 rounded text-xs">
+                                                                            <p className="font-medium text-blue-700">
+                                                                                Coating: {item.cart.lensCoating.title}
+                                                                            </p>
+                                                                            <p className="text-blue-500">{item.cart.lensCoating.description}</p>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+
+                                                                {/* Pricing Breakdown */}
+                                                                <div className="text-right min-w-[120px]">
+                                                                    <div className="bg-gray-50 p-2 rounded text-xs space-y-1">
+                                                                        <div className="flex justify-between">
+                                                                            <span className="text-gray-600">Product:</span>
+                                                                            <span className="font-medium">{formatPrice(pricing.productPrice)}</span>
+                                                                        </div>
+                                                                        <div className="flex justify-between">
+                                                                            <span className="text-gray-600">Lens:</span>
+                                                                            <span className="font-medium">{formatPrice(pricing.lensPrice)}</span>
+                                                                        </div>
+                                                                        <div className="flex justify-between">
+                                                                            <span className="text-gray-600">Coating:</span>
+                                                                            <span className="font-medium">{formatPrice(pricing.coatingPrice)}</span>
+                                                                        </div>
+                                                                        <div className="border-t border-gray-200 pt-1">
+                                                                            <div className="flex justify-between">
+                                                                                <span className="text-gray-700 font-medium">Subtotal:</span>
+                                                                                <span className="font-semibold">{formatPrice(pricing.subtotal)}</span>
+                                                                            </div>
+                                                                            <div className="flex justify-between">
+                                                                                <span className="text-gray-700">Qty: {item.quantity}</span>
+                                                                                <span className="font-bold text-blue-600">
+                                                                                    {formatPrice(pricing.total)}
+                                                                                </span>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                ))
+                                                    );
+                                                })
                                             ) : (
-                                                <p className="text-xs text-gray-600">No items in this order</p>
+                                                <p className="text-xs text-gray-600">No items found</p>
                                             )}
                                         </div>
                                     </div>
