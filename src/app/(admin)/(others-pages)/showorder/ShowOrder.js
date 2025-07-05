@@ -13,6 +13,7 @@ import { GetAllOrders, UpdateOrderStatus } from "@/store/authSlice";
 import Button from "@/components/ui/button/Button";
 import GlobalLoading from "@/components/common/GlobalLoading";
 import toast from "react-hot-toast";
+import * as XLSX from 'xlsx';
 
 export default function BasicTableOne() {
     const dispatch = useDispatch()
@@ -398,16 +399,10 @@ export default function BasicTableOne() {
                                         ${item.lensType ? `
                                             <div class="lens-details">
                                                 <h4>Lens: ${item.lensType.name} (${item.lensType.type})</h4>
-                                                <p>${item.lensType.description}</p>
                                             </div>
                                         ` : ''}
                                         
-                                        ${item.lensCoating ? `
-                                            <div class="coating-details">
-                                                <h4>Coating: ${item.lensCoating.title}</h4>
-                                                <p>${item.lensCoating.description}</p>
-                                            </div>
-                                        ` : ''}
+                                      
                                     </div>
                                     
                                     <div class="item-pricing">
@@ -517,6 +512,81 @@ export default function BasicTableOne() {
         return `₹${price?.toLocaleString() || 0}`;
     };
 
+    const exportToExcel = () => {
+        if (Data.length === 0) {
+            toast.error('No data to export');
+            return;
+        }
+
+        try {
+            // Prepare data for Excel export
+            const excelData = Data.map(order => {
+                const netAmount = order.totalAmount - (order.totalAmount * 0.02);
+                const items = order.items?.map(item => {
+                    const productPrice = item.product?.price || 0;
+                    const lensPrice = item.cart?.lensType?.price || 0;
+                    const coatingPrice = item.cart?.lensCoating?.price || 0;
+                    const subtotal = productPrice + lensPrice + coatingPrice;
+                    const total = subtotal * (item.quantity || 1);
+
+                    return `${item.product?.name || 'N/A'} (Qty: ${item.quantity || 1}) - Product: ₹${productPrice}, Lens: ${item.cart?.lensType?.name || 'N/A'} (₹${lensPrice}), Coating: ${item.cart?.lensCoating?.title || 'N/A'} (₹${coatingPrice}), Total: ₹${total}`;
+                }).join(' | ') || 'N/A';
+
+                return {
+                    'Order ID': order._id.slice(-8),
+                    'Customer Name': order.shippingAddress?.fullName || 'N/A',
+                    'Customer Email': order.user?.email || 'N/A',
+                    'Customer Phone': order.shippingAddress?.phone || 'N/A',
+                    'Shipping Address': `${order.shippingAddress?.address || ''}, ${order.shippingAddress?.city || ''}, ${order.shippingAddress?.state || ''}, ${order.shippingAddress?.zipCode || ''}, ${order.shippingAddress?.country || ''}`.trim(),
+                    'Order Items': items,
+                    'Total Amount': order.totalAmount,
+                    'Net Amount (after 2% fee)': netAmount.toFixed(2),
+                    'Order Status': order.status,
+                    'Payment Status': order.paymentStatus,
+                    'Payment Method': order.paymentMethod,
+                    'Order Date': new Date(order.createdAt).toLocaleDateString(),
+                    'Order Time': new Date(order.createdAt).toLocaleTimeString()
+                };
+            });
+
+            // Create workbook and worksheet
+            const workbook = XLSX.utils.book_new();
+            const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+            // Auto-size columns
+            const columnWidths = [
+                { wch: 12 }, // Order ID
+                { wch: 20 }, // Customer Name
+                { wch: 25 }, // Customer Email
+                { wch: 15 }, // Customer Phone
+                { wch: 40 }, // Shipping Address
+                { wch: 50 }, // Order Items
+                { wch: 15 }, // Total Amount
+                { wch: 20 }, // Net Amount
+                { wch: 15 }, // Order Status
+                { wch: 15 }, // Payment Status
+                { wch: 15 }, // Payment Method
+                { wch: 12 }, // Order Date
+                { wch: 12 }  // Order Time
+            ];
+            worksheet['!cols'] = columnWidths;
+
+            // Add worksheet to workbook
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Orders');
+
+            // Generate filename with current date
+            const currentDate = new Date().toISOString().split('T')[0];
+            const filename = `orders_export_${currentDate}.xlsx`;
+
+            // Save the file
+            XLSX.writeFile(workbook, filename);
+            toast.success('Orders exported to Excel successfully!');
+        } catch (error) {
+            console.error('Error exporting to Excel:', error);
+            toast.error('Failed to export orders to Excel');
+        }
+    };
+
     useEffect(() => {
         GetOrderData()
     }, [GetOrderData])
@@ -525,6 +595,16 @@ export default function BasicTableOne() {
         <div className="p-6">
             <div className="mb-6 flex justify-between items-center">
                 <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Orders</h1>
+                <Button
+                    onClick={exportToExcel}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                    disabled={IsLoading || Data.length === 0}
+                >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Export to Excel
+                </Button>
             </div>
 
             {IsLoading && <GlobalLoading />}

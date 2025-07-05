@@ -24,6 +24,7 @@ export default function Index() {
     const dispatch = useDispatch();
     const [IsLoading, setIsLoding] = useState(false);
     const [Url, setUrl] = useState(null);
+    const [isNavigating, setIsNavigating] = useState(false);
     const router = useRouter();
 
     const searchParams = useSearchParams();
@@ -110,7 +111,7 @@ export default function Index() {
                 console.log("Response", response)
                 if (response.status == 200) {
                     toast.success('Category updated successfully!');
-
+                    setIsNavigating(true);
                     router.push("/showcat");
                     setIsLoding(false);
                 }
@@ -119,7 +120,7 @@ export default function Index() {
                 console.log("Response", response)
                 if (response.status == 200) {
                     toast.success('Category added successfully!');
-
+                    setIsNavigating(true);
                     router.push("/showcat");
                     setIsLoding(false);
                 }
@@ -154,7 +155,7 @@ export default function Index() {
     return (
         <div className={styles.main}>
             {
-                IsLoading && <GlobalLoading />
+                (IsLoading || isNavigating) && <GlobalLoading />
             }
             <div className={styles.inner}>
                 <form onSubmit={handleSubmit(submitHandler)}>

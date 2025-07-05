@@ -47,6 +47,7 @@ export default function SignInForm() {
 
     dispatch(Login(jsonObject)).then((response) => {
       console.log("res", response)
+        setIsLoading(true)
       if (response.payload.status == 200) {
         toast.success("SignIn successfully.")
         router.push("/")

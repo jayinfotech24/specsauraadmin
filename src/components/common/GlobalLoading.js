@@ -13,15 +13,15 @@ export default function GlobalLoading() {
             setIsLoading(true);
         };
 
-        const handleComplete = () => {
-            setTimeout(() => {
-                setIsLoading(false);
-            }, 500);
-        };
+        // const handleComplete = () => {
+        //     setTimeout(() => {
+        //         setIsLoading(false);
+        //     }, 500);
+        // };
 
         // Show loading when pathname or searchParams change
         handleStart();
-        handleComplete();
+        // handleComplete();
 
         return () => {
             setIsLoading(false);
