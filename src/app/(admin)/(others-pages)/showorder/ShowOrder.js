@@ -153,7 +153,7 @@ const Calendar = ({ startDate, endDate, onStartDateChange, onEndDateChange }) =>
                         return <div key={index} className="h-8"></div>;
                     }
 
-                    const dateStr = formatDate(day);
+
                     const isSelected = isDateInRange(day);
                     const isStart = isStartDate(day);
                     const isEnd = isEndDate(day);
