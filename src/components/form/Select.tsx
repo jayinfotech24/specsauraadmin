@@ -11,6 +11,7 @@ interface SelectProps {
   onChange: (value: string) => void;
   className?: string;
   defaultValue?: string;
+  value?: string; // <-- Add this
   error?: boolean;
   hint?: string;
   name?: string;
@@ -23,6 +24,7 @@ const Select: React.FC<SelectProps> = ({
   onChange,
   className = "",
   defaultValue = "",
+  value, // <-- Add this
   error = false,
   hint,
   name,
@@ -30,10 +32,12 @@ const Select: React.FC<SelectProps> = ({
 }) => {
   const [selectedValue, setSelectedValue] = useState<string>(defaultValue);
 
+  const isControlled = value !== undefined;
+
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    setSelectedValue(value);
-    onChange(value);
+    const newValue = e.target.value;
+    if (!isControlled) setSelectedValue(newValue);
+    onChange(newValue);
   };
 
   const baseClass =
@@ -50,7 +54,7 @@ const Select: React.FC<SelectProps> = ({
         name={name}
         id={id}
         className={finalClass}
-        value={selectedValue}
+        value={isControlled ? value : selectedValue}
         onChange={handleChange}
       >
         <option value="" disabled>

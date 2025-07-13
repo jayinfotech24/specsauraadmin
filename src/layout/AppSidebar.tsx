@@ -361,6 +361,7 @@ const AppSidebar: React.FC = () => {
   };
 
   const handleNavigation = (path: string) => {
+    if (pathname === path) return; // Prevent navigation and loading if already on the same path
     setIsNavigating(true);
     router.push(path);
   };

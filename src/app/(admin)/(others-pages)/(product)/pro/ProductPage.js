@@ -21,12 +21,42 @@ import { ProductById } from "../../../../../store/authSlice"
 import RadioButtons from '@/components/form/form-elements/RadioButtons'
 import { useSearchParams } from 'next/navigation'
 import Image from 'next/image';
-import { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
+
+export const FRAME_SHAPES = Object.freeze([
+    "Round",
+    "Oval",
+    "Square",
+    "Rectangle",
+    "Cat Eye",
+    "Geometric",
+    "Hexagon",
+    "Octagon",
+    "Browline",
+    "Butterfly",
+    "Wraparound",
+    "Shield",
+    "Aviator",
+    "Wayfarer",
+    "Rimless",
+    "Semi-Rimless",
+    "Full Rim",
+    "Heart",
+    "Star",
+    "Novelty"
+]);
 
 export default function Page() {
+    const brandMap = [
+        { img: "/Images/brand1.jpg", type: "Ascend Drip" },
+        { img: "/Images/brand2.jpg", type: "Seraphic" },
+        { img: "/Images/brand3.jpg", type: "PriumX" },
+        { img: "/Images/brand4.jpg", type: "halospecs" }
+    ];
+
     const schema = Yup.object().shape({
         name: Yup.string().required("Please enter product name."),
-        color: Yup.string().required("Please enter color."),
+
         price: Yup.number().typeError("Price must be a number").required("Please enter price."),
         totalItems: Yup.number().typeError("Total items must be a number").required("Please enter total items."),
         availableItems: Yup.number().typeError("Available items must be a number").required("Please enter available items."),
@@ -46,6 +76,8 @@ export default function Page() {
         powerSunglasses: Yup.string().required("Please enter power sunglasses info."),
         gender: Yup.string().required("Please enter gender."),
         warranty: Yup.string().required("Please enter warranty information."),
+        collection_type: Yup.string().required("Please select a collection type."),
+        frameShape: Yup.string().required("Please select a frame shape."),
         file: Yup.mixed().when('$id', {
             is: (id) => !id, // When there is no id (creating new)
             then: (schema) => schema.required("Please upload product images"), // Apply validation
@@ -76,8 +108,15 @@ export default function Page() {
         handleSubmit,
         setValue,
         formState: { errors },
+        watch,
+
     } = useForm({
         resolver: yupResolver(schema),
+        defaultValues: {
+            powerSunglasses: false, // or undefined, just a placeholder
+            collection_type: '',
+            frameShape: '',
+        },
         context: { id } // Pass the id to the validation context
     });
 
@@ -154,7 +193,7 @@ export default function Page() {
                 const data = response.payload.product;
 
                 setValue("name", data.name || "");
-                setValue("color", data.color || "");
+
                 setValue("price", data.price || 0);
                 setValue("totalItems", data.totalItems || 0);
                 setValue("availableItems", data.availableItems || 0);
@@ -170,9 +209,12 @@ export default function Page() {
                 setValue("templeColor", data.templeColor || "");
                 setValue("frameMaterial", data.frameMaterial || "");
                 setValue("lens", data.lens || "");
-                setValue("powerSunglasses", data.powerSunglasses || false);
+                setValue("powerSunglasses", data.powerSunglasses
+                    || false);
                 setValue("gender", data.gender || "Unisex");
                 setValue("warranty", data.warranty || "");
+                setValue("collection_type", data.collection_type || '');
+                setValue("frameShape", data.frameShape || '');
                 setFileUrls(data.images);
 
                 // For category (pick _id)
@@ -274,7 +316,7 @@ export default function Page() {
 
             const jsonObject = {
                 name: data?.name,
-                color: data.color,
+
                 category: data.category,
                 price: data.price,
                 totalItems: data.totalItems,
@@ -295,11 +337,14 @@ export default function Page() {
                 lens: data.lens,
                 powerSunglasses: data.powerSunglasses,
                 gender: data.gender,
-                warranty: data.warranty
+                warranty: data.warranty,
+                collection_type: data.collection_type,
+                frameShape: data.frameShape,
             };
 
             if (id) {
                 const response = await dispatch(UpdateProductById({ id, data: jsonObject })).unwrap();
+                console.log("UU", response)
                 if (response.status == 200) {
                     toast.success('Product updated successfully!', {
                         style: {
@@ -393,14 +438,7 @@ export default function Page() {
                                         hint={errors.name?.message}
                                     />
                                 </div>
-                                <div>
-                                    <Label>Color</Label>
-                                    <Input type="text"
-                                        {...register("color")}
-                                        error={!!errors.color}
-                                        hint={errors.color?.message}
-                                    />
-                                </div>
+
                                 <div>
                                     <Label>Price</Label>
                                     <Input type="text"
@@ -457,6 +495,18 @@ export default function Page() {
                                     />
                                 </div>
                                 <div>
+                                    <Label>Collection Type</Label>
+                                    <Select
+                                        {...register("collection_type")}
+                                        options={brandMap.map(b => ({ value: b.type, label: b.type }))}
+                                        placeholder="Select a collection type"
+                                        error={!!errors.collection_type}
+                                        hint={errors.collection_type?.message}
+                                        value={watch("collection_type")}
+                                        onChange={val => setValue("collection_type", val, { shouldValidate: true, shouldDirty: true })}
+                                    />
+                                </div>
+                                <div>
                                     <RadioButtons
                                         title="Gender"
                                         name="gender"
@@ -468,6 +518,8 @@ export default function Page() {
                                             { value: "Female", label: "Female" },
                                             { value: "Unisex", label: "Unisex" },
                                         ]}
+                                        value={watch("gender")}
+                                        onChange={e => setValue("gender", e.target.value)}
                                     />
                                 </div>
                                 <div>
@@ -489,6 +541,7 @@ export default function Page() {
                                             className="dark:bg-dark-900"
                                             error={!!errors.category}
                                             hint={errors.category?.message}
+                                            value={watch("category")}
                                         />
                                         <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
                                             <ChevronDownIcon />
@@ -546,6 +599,18 @@ export default function Page() {
                                     />
                                 </div>
                                 <div>
+                                    <Label>Frame Shape</Label>
+                                    <Select
+                                        {...register("frameShape")}
+                                        options={FRAME_SHAPES.map(shape => ({ value: shape, label: shape }))}
+                                        placeholder="Select a frame shape"
+                                        error={!!errors.frameShape}
+                                        hint={errors.frameShape?.message}
+                                        value={watch("frameShape")}
+                                        onChange={val => setValue("frameShape", val, { shouldValidate: true, shouldDirty: true })}
+                                    />
+                                </div>
+                                <div>
                                     <Label>lens</Label>
                                     <Input type="text"
                                         {...register("lens")}
@@ -564,6 +629,8 @@ export default function Page() {
                                             { value: true, label: "Yes" },
                                             { value: false, label: "No" },
                                         ]}
+                                        value={watch("powerSunglasses")}
+                                        onChange={e => setValue("powerSunglasses", e.target.value)}
                                     />
                                 </div>
 
