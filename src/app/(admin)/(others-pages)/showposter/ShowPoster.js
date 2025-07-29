@@ -28,6 +28,8 @@ export default function ShowPoster() {
         setIsLoading(true);
         try {
             const response = await dispatch(GetAllPosters()).unwrap();
+
+            console.log("Re", response)
             if (response.status === 200) {
                 setPosters(response.items);
                 toast.success('Posters loaded successfully!');

@@ -11,14 +11,16 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
 import { useDispatch } from 'react-redux';
-import { AddPoster, FileUpload, UpdatePoster, GetPosterById } from '@/store/authSlice';
+import { AddPoster, FileUpload, UpdatePoster, GetPosterById, GetCategory } from '@/store/authSlice';
 import { useSearchParams, useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import Button from '@/components/ui/button/Button';
+import Select from '@/components/form/Select';
 
 
 import styles from "../../../../../styles/poster.module.css"
 import GlobalLoading from '../../../../../components/common/GlobalLoading';
+
 
 export default function PosterForm() {
     const [selectedFile, setSelectedFile] = useState(null);
@@ -151,8 +153,11 @@ export default function PosterForm() {
             const jsonObject = {
                 url: finalUrl,
                 title: data.title,
-                description: data.description
+                description: data.description,
+                navigation: feature,
+                type: typeSelect
             };
+            console.log("OO", jsonObject)
 
             if (id) {
                 const response = await dispatch(UpdatePoster({ id, data: jsonObject })).unwrap();
@@ -174,6 +179,29 @@ export default function PosterForm() {
             setIsLoading(false);
         }
     };
+
+    const BRAND_OPTIONS = [
+        { name: "Ascend Drip", img: "/images/brand/brand-01.svg" },
+        { name: "Seraphic", img: "/images/brand/brand-02.svg" },
+        { name: "PriumX", img: "/images/brand/brand-03.svg" },
+        { name: "halospecs", img: "/images/brand/brand-04.svg" }
+    ];
+
+    const [typeSelect, setTypeSelect] = useState("Collection"); // "Collection" or "Brands"
+    const [feature, setFeature] = useState(""); // category id or brand name
+    const [categories, setCategories] = useState([]);
+
+    // Fetch categories when "Collection" is selected
+    useEffect(() => {
+        if (typeSelect === "Collection") {
+            // Replace with your actual fetch logic
+            dispatch(GetCategory()).then((response) => {
+                if (response.payload?.items) {
+                    setCategories(response.payload.items);
+                }
+            });
+        }
+    }, [typeSelect, dispatch]);
 
     return (
         <div className={styles.main}>
@@ -198,6 +226,46 @@ export default function PosterForm() {
                                 rows={6}
                             />
                         </div>
+
+                        <div>
+                            <Label>Type</Label>
+                            <Select
+                                options={[
+                                    { value: 'Collection', label: 'Collection' },
+                                    { value: 'Brands', label: 'Brands' }
+                                ]}
+                                placeholder="Select Type"
+                                value={typeSelect}
+                                onChange={val => {
+                                    setTypeSelect(val);
+                                    setFeature("");
+                                }}
+                            />
+                        </div>
+
+                        {typeSelect === "Collection" && (
+                            <div>
+                                <Label>Category</Label>
+                                <Select
+                                    options={categories.map(cat => ({ value: cat._id, label: cat.title }))}
+                                    placeholder="Select Category"
+                                    value={feature}
+                                    onChange={val => setFeature(val)}
+                                />
+                            </div>
+                        )}
+
+                        {typeSelect === "Brands" && (
+                            <div>
+                                <Label>Brand</Label>
+                                <Select
+                                    options={BRAND_OPTIONS.map(brand => ({ value: brand.name, label: brand.name }))}
+                                    placeholder="Select Brand"
+                                    value={feature}
+                                    onChange={val => setFeature(val)}
+                                />
+                            </div>
+                        )}
 
                         <div>
                             <Label>Upload file</Label>

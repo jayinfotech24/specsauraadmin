@@ -41,7 +41,12 @@ const Appapis = {
     getSingleCoating: (id) => `/coating/single/${id}`,
     updateCoating: (id) => `/coating/${id}`,
     deleteCoating: (id) => `/coating/${id}`,
-    updateLense: (id) => `/lens/${id}`
+    updateLense: (id) => `/lens/${id}`,
+    createGst: `/gstrate`,
+    updateGst: (id) => `/gstrate/${id}`,
+    deleteGst: (id) => `/gstrate/${id}`,
+    getGst: `/gstrate`,
+    getSingleGst: (id) => `/gstrate/${id}`
 }
 
 export default Appapis

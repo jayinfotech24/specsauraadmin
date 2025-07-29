@@ -426,6 +426,54 @@ export const UpdateLense = createAsyncThunk("api/updateLense", async ({ id, data
         return rejectWithValue(error.response?.data || "Something went wrong");
     }
 })
+export const AddGstData = createAsyncThunk("api/addGset", async (credentials, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.post(`${Appapis.Basurl}${Appapis.createGst}`, credentials);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+export const UpdateGst = createAsyncThunk("api/updategst", async ({ id, data }, { rejectWithValue }) => {
+    try {
+        console.log("DDD", id, data)
+        const response = await axiosInstance.patch(`${Appapis.Basurl}${Appapis.updateGst(id)}`, data);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+export const DeleteGst = createAsyncThunk("api/deleteGst", async (id, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.delete(`${Appapis.Basurl}${Appapis.deleteGst(id)}`);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+export const GetSingleGstRate = createAsyncThunk("api/getsinglegst", async (id, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.get(`${Appapis.Basurl}${Appapis.getSingleGst(id)}`);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+export const GetAllGst = createAsyncThunk("api/getallgst", async (credentials, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.get(`${Appapis.Basurl}${Appapis.getGst}`);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+
+
 
 const AuthSlice = createSlice({
     name: "auth",
@@ -489,7 +537,8 @@ const AuthSlice = createSlice({
             UpdateVideo, DeleteVideo, UpdateOrderStatus, GetBlogList, AddBlog,
             UpdateBlog, DeleteBlog, GetBlogById, AddLensType, GetAllLens,
             GetSingleLense, DeleteLens, GetCoating, AddCoatings, GetSingleCoating,
-            UpdateCoating, DeleteCoating, UpdateLense
+            UpdateCoating, DeleteCoating, UpdateLense, AddGstData, UpdateGst, DeleteGst, GetAllGst
+
         ];
 
         asyncThunks.forEach(thunk => handleAsyncThunk(thunk, builder));

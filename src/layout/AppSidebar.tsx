@@ -126,7 +126,15 @@ const navItems: NavItem[] = [
     subItems: [{ name: "Add Coating", path: "/coating", pro: false },
     { name: "Show Coating", path: "/showcoating", pro: false }
     ],
-  }
+  },
+  {
+    name: "GST Rates",
+    icon: <PageIcon />,
+    subItems: [{ name: "GST Types", path: "/showgst", pro: false },
+    { name: "Add Gst", path: "/addgst", pro: false }
+    ],
+  },
+
 
   // {
   //   name: "demo",
