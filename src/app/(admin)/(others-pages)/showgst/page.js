@@ -19,7 +19,7 @@ import toast from "react-hot-toast";
 
 const GstDetails = () => {
     const [IsLoading, setIsLoading] = useState(false)
-    const [GstData, setGstData] = useState([])
+    const [GstData, setGstData] = useState([]);
     const [showDeleteModal, setShowDeleteModal] = useState(false)
     const dispatch = useDispatch();
 
