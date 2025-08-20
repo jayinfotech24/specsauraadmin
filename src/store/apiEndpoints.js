@@ -1,6 +1,6 @@
 const Appapis = {
-    // Basurl: "https://api.specsaura.com/api",
-    Basurl: "https://specsauradataplazma.vercel.app/api",
+    Basurl: "https://api.specsaura.com/api",
+    // Basurl: "https://specsauradataplazma.vercel.app/api",
     signIn: "/admin/login",
     addCategory: "/category",
     fileUpload: "/upload",
