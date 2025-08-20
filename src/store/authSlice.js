@@ -473,6 +473,56 @@ export const GetAllGst = createAsyncThunk("api/getallgst", async (credentials, {
     }
 })
 
+// Accessory related functions
+export const GetAllAccessories = createAsyncThunk("api/GetAllAccessories", async (credentials, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.get(`${Appapis.Basurl}${Appapis.getAllAccessory}`);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+
+export const GetaccessoryById = createAsyncThunk("api/GetAccessoryById", async (id, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.get(`${Appapis.Basurl}${Appapis.getAcessoryById(id)}`);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+
+export const AddAccessory = createAsyncThunk("api/AddAccessory", async (credentials, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.post(`${Appapis.Basurl}${Appapis.createAccessory}`, credentials);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+
+export const UpdateAccessory = createAsyncThunk("api/UpdateAccessory", async ({ id, data }, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.patch(`${Appapis.Basurl}${Appapis.updateAcessoryById(id)}`, data);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
+
+export const DeleteAccessory = createAsyncThunk("api/DeleteAccessory", async (id, { rejectWithValue }) => {
+    try {
+        const response = await axiosInstance.delete(`${Appapis.Basurl}${Appapis.deleteAccessory(id)}`);
+        return response.data;
+    }
+    catch (error) {
+        return rejectWithValue(error.response?.data || "Something went wrong");
+    }
+})
 
 
 const AuthSlice = createSlice({
@@ -537,7 +587,8 @@ const AuthSlice = createSlice({
             UpdateVideo, DeleteVideo, UpdateOrderStatus, GetBlogList, AddBlog,
             UpdateBlog, DeleteBlog, GetBlogById, AddLensType, GetAllLens,
             GetSingleLense, DeleteLens, GetCoating, AddCoatings, GetSingleCoating,
-            UpdateCoating, DeleteCoating, UpdateLense, AddGstData, UpdateGst, DeleteGst, GetAllGst
+            UpdateCoating, DeleteCoating, UpdateLense, AddGstData, UpdateGst, DeleteGst, GetAllGst,
+            GetAllAccessories, GetaccessoryById, AddAccessory, UpdateAccessory, DeleteAccessory
 
         ];
 

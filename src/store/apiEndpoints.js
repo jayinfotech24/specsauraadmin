@@ -46,7 +46,12 @@ const Appapis = {
     updateGst: (id) => `/gstrate/${id}`,
     deleteGst: (id) => `/gstrate/${id}`,
     getGst: `/gstrate`,
-    getSingleGst: (id) => `/gstrate/${id}`
+    getSingleGst: (id) => `/gstrate/${id}`,
+    getAllAccessory: `/accessories/all`,
+    getAcessoryById: (id) => `/accessory/${id}`,
+    updateAcessoryById: (id) => `/accessory/${id}`,
+    deleteAccessory: (id) => `/accessory/${id}`,
+    createAccessory: `/accessory`,
 }
 
 export default Appapis

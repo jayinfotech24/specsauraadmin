@@ -343,7 +343,7 @@ export default function Page() {
                 frameShape: data.frameShape,
                 discount: data.discount,
 
-                isAccessory: true
+                isAccessory: false
 
             };
 
