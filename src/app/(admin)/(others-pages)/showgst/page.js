@@ -1,7 +1,7 @@
 "use client";
 
 import { DeleteGst, GetAllGst } from "@/store/authSlice";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 import {
     Table, TableBody,
@@ -25,7 +25,7 @@ const GstDetails = () => {
 
     const [selectedRate, setSelectedRate] = useState(null)
     const router = useRouter()
-    const GetAllData = () => {
+    const GetAllData = useCallback(() => {
         setIsLoading(true)
         dispatch(GetAllGst()).then((response) => {
             console.log("RRRRR", response);
@@ -37,16 +37,13 @@ const GstDetails = () => {
             console.log("Error", error)
             setIsLoading(false)
         })
-    }
+    }, [dispatch])
 
 
     useEffect(() => {
         GetAllData()
-    }, [])
-    const openDeleteModal = (rate) => {
-        setSelectedRate(rate);
-        setShowDeleteModal(true);
-    };
+    }, [GetAllData])
+
     const handleDelete = async (id) => {
         setIsLoading(true);
         try {
@@ -102,12 +99,12 @@ const GstDetails = () => {
                                     >
                                         Action
                                     </TableCell>
-                                    <TableCell
+                                    {/* <TableCell
                                         isHeader
                                         className="px-2 py-2 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 w-[100px]"
                                     >
                                         Delete
-                                    </TableCell>
+                                    </TableCell> */}
 
                                 </TableRow>
                             </TableHeader>
@@ -150,7 +147,7 @@ const GstDetails = () => {
                                                     Update
                                                 </Button>
                                             </TableCell>
-                                            <TableCell className="px-2 py-2 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                            {/* <TableCell className="px-2 py-2 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                                                 <Button
                                                     size="sm"
                                                     className="bg-red-600 hover:bg-red-700 text-white"
@@ -159,7 +156,7 @@ const GstDetails = () => {
                                                 >
                                                     Delete
                                                 </Button>
-                                            </TableCell>
+                                            </TableCell> */}
                                         </TableRow>
                                     ))
                                 )}

@@ -47,7 +47,7 @@ export default function SignInForm() {
 
     dispatch(Login(jsonObject)).then((response) => {
       console.log("res", response)
-        setIsLoading(true)
+      setIsLoading(true)
       if (response.payload.status == 200) {
         toast.success("SignIn successfully.")
         router.push("/")
@@ -67,7 +67,7 @@ export default function SignInForm() {
         position="top-center"
         reverseOrder={false}
       />
-      {IsLoading &&<GlobalLoading />}
+      {IsLoading && <GlobalLoading />}
       <div className="w-full max-w-md sm:pt-10 mx-auto mb-5">
         {/* <Link
           href="/"

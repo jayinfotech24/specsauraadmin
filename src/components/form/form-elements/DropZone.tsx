@@ -6,7 +6,7 @@ import { useDropzone } from "react-dropzone";
 const DropzoneComponent: React.FC = () => {
   const onDrop = (acceptedFiles: File[]) => {
     console.log("Files dropped:", acceptedFiles);
-    // Handle file uploads here
+
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -24,11 +24,10 @@ const DropzoneComponent: React.FC = () => {
         <form
           {...getRootProps()}
           className={`dropzone rounded-xl   border-dashed border-gray-300 p-7 lg:p-10
-        ${
-          isDragActive
-            ? "border-brand-500 bg-gray-100 dark:bg-gray-800"
-            : "border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-900"
-        }
+        ${isDragActive
+              ? "border-brand-500 bg-gray-100 dark:bg-gray-800"
+              : "border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-900"
+            }
       `}
           id="demo-upload"
         >

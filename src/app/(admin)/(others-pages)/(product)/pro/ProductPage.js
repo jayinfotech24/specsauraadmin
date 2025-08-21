@@ -22,6 +22,7 @@ import RadioButtons from '@/components/form/form-elements/RadioButtons'
 import { useSearchParams } from 'next/navigation'
 import Image from 'next/image';
 import toast, { Toaster } from 'react-hot-toast';
+import { useRouter } from 'next/navigation'
 
 export const FRAME_SHAPES = Object.freeze([
     "Round",
@@ -47,6 +48,8 @@ export const FRAME_SHAPES = Object.freeze([
 ]);
 
 export default function Page() {
+
+    const router = useRouter()
     const brandMap = [
         { img: "/Images/brand1.jpg", type: "Ascend Drip" },
         { img: "/Images/brand2.jpg", type: "Seraphic" },
@@ -128,13 +131,13 @@ export default function Page() {
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
             if (!file.type.startsWith('image/')) {
-                toast.error('Please upload image files only', {
-                    style: {
-                        marginTop: '100px',
-                        background: '#ff4d4f',
-                        color: '#fff',
-                    },
-                });
+                // toast.error('Please upload image files only', {
+                //     style: {
+                //         marginTop: '100px',
+                //         background: '#ff4d4f',
+                //         color: '#fff',
+                //     },
+                // });
                 return;
             }
 
@@ -153,13 +156,13 @@ export default function Page() {
         const file = event.target.files?.[0];
         if (file) {
             if (!file.type.startsWith('image/')) {
-                toast.error('Please upload an image file', {
-                    style: {
-                        marginTop: '100px',
-                        background: '#ff4d4f',
-                        color: '#fff',
-                    },
-                });
+                // toast.error('Please upload an image file', {
+                //     style: {
+                //         marginTop: '100px',
+                //         background: '#ff4d4f',
+                //         color: '#fff',
+                //     },
+                // });
                 return;
             }
 
@@ -351,13 +354,13 @@ export default function Page() {
                 const response = await dispatch(UpdateProductById({ id, data: jsonObject })).unwrap();
                 console.log("UU", response)
                 if (response.status == 200) {
-                    toast.success('Product updated successfully!', {
-                        style: {
-                            marginTop: '100px',
-                            background: '#52c41a',
-                            color: '#fff',
-                        },
-                    });
+                    // toast.success('Product updated successfully!', {
+                    //     style: {
+                    //         marginTop: '100px',
+                    //         background: '#52c41a',
+                    //         color: '#fff',
+                    //     },
+                    // });
                     router.push("/showcat");
                     setIsLoading(false);
                 }
@@ -376,13 +379,13 @@ export default function Page() {
                 }
             }
         } catch (error) {
-            toast.error('Failed to process product. Please try again.', {
-                style: {
-                    marginTop: '100px',
-                    background: '#ff4d4f',
-                    color: '#fff',
-                },
-            });
+            // toast.error('Failed to process product. Please try again.', {
+            //     style: {
+            //         marginTop: '100px',
+            //         background: '#ff4d4f',
+            //         color: '#fff',
+            //     },
+            // });
             console.error("Error submitting form:", error);
         } finally {
             setIsLoading(false);

@@ -131,63 +131,91 @@ export default function ShowAccessory() {
                             </TableHeader>
 
                             <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-                                {Data.map((accessory) => (
-                                    <TableRow key={accessory._id} className="hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors duration-150">
-                                        <TableCell className="px-1.5 py-1.5 text-start">
-                                            <div className="flex items-center gap-1.5">
-                                                <div className="w-6 h-6 overflow-hidden rounded-full">
-                                                    <Image
-                                                        alt={accessory.name || accessory.title}
-                                                        width={24}
-                                                        height={24}
-                                                        src={accessory.url || accessory.image || accessory.thumbnail || "/images/product/product-01.jpg"}
-                                                        className="object-cover"
-                                                    />
+                                {Data.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={7} className="py-12 text-center">
+                                            <div className="flex flex-col items-center justify-center space-y-4">
+                                                <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                                                    <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                                    </svg>
                                                 </div>
-                                                <div>
-                                                    <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                                                        {accessory.name || accessory.title}
-                                                    </span>
-                                                    <span className="block text-gray-500 text-theme-xs dark:text-gray-400">
-                                                        {accessory.description || accessory.shortDescription || "No description"}
-                                                    </span>
+                                                <div className="text-center">
+                                                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                                                        No Accessories Found
+                                                    </h3>
+                                                    <p className="text-gray-500 dark:text-gray-400">
+                                                        Get started by adding your first accessory to the catalog.
+                                                    </p>
                                                 </div>
+                                                <Button
+                                                    onClick={() => router.push('/ace')}
+                                                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                                                >
+                                                    Add New Accessory
+                                                </Button>
                                             </div>
                                         </TableCell>
-                                        <TableCell className="px-1.5 py-1.5 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                            {accessory.category.title || accessory.type || "N/A"}
-                                        </TableCell>
-                                        <TableCell className="px-1.5 py-1.5 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                            {accessory.totalItems || accessory.stock || accessory.quantity || 0}
-                                        </TableCell>
-                                        <TableCell className="px-1.5 py-1.5 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                            {accessory.availableItems || accessory.availableStock || accessory.availableQuantity || 0}
-                                        </TableCell>
-                                        <TableCell className="px-1.5 py-1.5 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                            {`${accessory.price || 0} ₹`}
-                                        </TableCell>
-                                        <TableCell className="px-1.5 py-1.5 text-start">
-                                            <Button
-                                                size="sm"
-                                                variant="primary"
-                                                onClick={() => router.push(`/ace/?id=${accessory._id}`)}
-                                                className="px-1.5 py-0.5 text-xs"
-                                            >
-                                                Update
-                                            </Button>
-                                        </TableCell>
-                                        <TableCell className="px-1.5 py-1.5 text-start">
-                                            <Button
-                                                size="sm"
-                                                className="bg-red-600 hover:bg-red-700 text-white px-1.5 py-0.5 text-xs"
-                                                onClick={() => openDeleteModal(accessory)}
-                                                disabled={IsLoading}
-                                            >
-                                                Delete
-                                            </Button>
-                                        </TableCell>
                                     </TableRow>
-                                ))}
+                                ) : (
+                                    Data.map((accessory) => (
+                                        <TableRow key={accessory._id} className="hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors duration-150">
+                                            <TableCell className="px-1.5 py-1.5 text-start">
+                                                <div className="flex items-center gap-1.5">
+                                                    <div className="w-6 h-6 overflow-hidden rounded-full">
+                                                        <Image
+                                                            alt={accessory.name || accessory.title}
+                                                            width={24}
+                                                            height={24}
+                                                            src={accessory.url || accessory.image || accessory.thumbnail || "/images/product/product-01.jpg"}
+                                                            className="object-cover"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                                                            {accessory.name || accessory.title}
+                                                        </span>
+                                                        <span className="block text-gray-500 text-theme-xs dark:text-gray-400">
+                                                            {accessory.description || accessory.shortDescription || "No description"}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="px-1.5 py-1.5 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                                {accessory.category?.title || accessory.type || "N/A"}
+                                            </TableCell>
+                                            <TableCell className="px-1.5 py-1.5 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                                {accessory.totalItems || accessory.stock || accessory.quantity || 0}
+                                            </TableCell>
+                                            <TableCell className="px-1.5 py-1.5 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                                {accessory.availableItems || accessory.availableStock || accessory.availableQuantity || 0}
+                                            </TableCell>
+                                            <TableCell className="px-1.5 py-1.5 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                                {`${accessory.price || 0} ₹`}
+                                            </TableCell>
+                                            <TableCell className="px-1.5 py-1.5 text-start">
+                                                <Button
+                                                    size="sm"
+                                                    variant="primary"
+                                                    onClick={() => router.push(`/ace/?id=${accessory._id}`)}
+                                                    className="px-1.5 py-0.5 text-xs"
+                                                >
+                                                    Update
+                                                </Button>
+                                            </TableCell>
+                                            <TableCell className="px-1.5 py-1.5 text-start">
+                                                <Button
+                                                    size="sm"
+                                                    className="bg-red-600 hover:bg-red-700 text-white px-1.5 py-0.5 text-xs"
+                                                    onClick={() => openDeleteModal(accessory)}
+                                                    disabled={IsLoading}
+                                                >
+                                                    Delete
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
                             </TableBody>
                         </Table>
                     </div>

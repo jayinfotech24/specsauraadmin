@@ -47,6 +47,7 @@ export default function BasicTableOne() {
         setIsLoading(true);
         try {
             const response = await dispatch(GetCategory()).unwrap();
+            console.log("II", response)
             if (response.status === 200) {
                 setData(response.items);
                 toast.success('Categories loaded successfully!');
@@ -181,9 +182,9 @@ export default function BasicTableOne() {
                                                     size="sm"
                                                     className="bg-red-600 hover:bg-red-700 text-white"
                                                     onClick={() => openDeleteModal(category)}
-                                                    disabled={IsLoading}
+                                                    disabled={IsLoading || category._id === "680fb9063dbd062321772ec6"}
                                                 >
-                                                    Delete
+                                                    {category._id === "680fb9063dbd062321772ec6" ? "Protected" : "Delete"}
                                                 </Button>
                                             </TableCell>
                                         </TableRow>

@@ -133,7 +133,7 @@ const navItems: NavItem[] = [
     name: "GST Rates",
     icon: <PageIcon />,
     subItems: [{ name: "GST Types", path: "/showgst", pro: false },
-    { name: "Add Gst", path: "/addgst", pro: false }
+      // { name: "Add Gst", path: "/addgst", pro: false }
     ],
   },
 

@@ -174,19 +174,19 @@ export default function Page() {
 
                 const data = response.payload.accessory || response.payload.data;
 
-                setValue("name", data.name || "");
+                setValue("name", data?.name || "");
 
-                setValue("price", data.price || 0);
-                setValue("totalItems", data.totalItems || 0);
-                setValue("availableItems", data.availableItems || 0);
-                setValue("description", data.description || "");
-                setValue("brandName", data.brandName || "");
-                setValue("modelNo", data.modelNo || "");
-                setValue("productID", data.productID || "");
+                setValue("price", data?.price || 0);
+                setValue("totalItems", data?.totalItems || 0);
+                setValue("availableItems", data?.availableItems || 0);
+                setValue("description", data?.description || "");
+                setValue("brandName", data?.brandName || "");
+                setValue("modelNo", data?.modelNo || "");
+                setValue("productID", data?.productID || "");
 
-                setValue("warranty", data.warranty || "");
+                setValue("warranty", data?.warranty || "");
 
-                setValue("discount", data.discount || 0)
+                setValue("discount", data?.discount || 0)
                 setFileUrls(data.images);
 
                 // For category (pick _id)
@@ -243,16 +243,17 @@ export default function Page() {
 
     const submitHandler = async (data) => {
         setIsLoading(true);
-        try {
-            let finalMainUrl = MainUrl;
-            let finalFileUrls = FileUrls;
 
-            // Upload main image if it's new
-            if (selectedMainFile && (!id || selectedMainFile !== MainUrl)) {
-                const formData = new FormData();
-                const uniqueFilename = Date.now() + "-" + selectedMainFile.name;
-                formData.append("file", selectedMainFile, uniqueFilename);
+        let finalMainUrl = MainUrl;
+        let finalFileUrls = FileUrls;
 
+        // Upload main image if it's new
+        if (selectedMainFile && (!id || selectedMainFile !== MainUrl)) {
+            const formData = new FormData();
+            const uniqueFilename = Date.now() + "-" + selectedMainFile.name;
+            formData.append("file", selectedMainFile, uniqueFilename);
+
+            try {
                 const uploadResponse = await dispatch(FileUpload(formData)).unwrap();
                 if (uploadResponse?.fileUrl) {
                     finalMainUrl = uploadResponse.fileUrl;
@@ -260,54 +261,73 @@ export default function Page() {
                 } else {
                     throw new Error('Failed to upload main image');
                 }
+            } catch (error) {
+                console.log(error)
+                toast.error('Failed to upload main image. Please try again.', {
+                    style: {
+                        marginTop: '100px',
+                        background: '#ff4d4f',
+                        color: '#fff',
+                    },
+                });
+                setIsLoading(false);
+                return;
             }
+        }
 
-            // Upload multiple images if they're new
-            if (selectedFiles.length > 0) {
-                const uploadedUrls = [];
-                for (const file of selectedFiles) {
-                    const formData = new FormData();
-                    const uniqueFilename = Date.now() + "-" + file.name;
-                    formData.append("file", file, uniqueFilename);
+        // Upload multiple images if they're new
+        if (selectedFiles.length > 0) {
+            const uploadedUrls = [];
+            for (const file of selectedFiles) {
+                const formData = new FormData();
+                const uniqueFilename = Date.now() + "-" + file.name;
+                formData.append("file", file, uniqueFilename);
 
+                try {
                     const uploadResponse = await dispatch(FileUpload(formData)).unwrap();
                     if (uploadResponse?.fileUrl) {
                         uploadedUrls.push(uploadResponse.fileUrl);
                     }
-                }
-                if (uploadedUrls.length > 0) {
-                    finalFileUrls = uploadedUrls;
-                    setFileUrls(uploadedUrls);
+                } catch (error) {
+                    console.log(error)
+                    toast.error('Failed to upload images. Please try again.', {
+                        style: {
+                            marginTop: '100px',
+                            background: '#ff4d4f',
+                            color: '#fff',
+                        },
+                    });
+                    setIsLoading(false);
+                    return;
                 }
             }
+            if (uploadedUrls.length > 0) {
+                finalFileUrls = uploadedUrls;
+                setFileUrls(uploadedUrls);
+            }
+        }
 
-            const jsonObject = {
-                name: data?.name,
+        const jsonObject = {
+            name: data?.name,
+            category: "680fb9063dbd062321772ec6",
+            price: data.price,
+            totalItems: data.totalItems,
+            availableItems: data.availableItems,
+            url: finalMainUrl,
+            images: finalFileUrls,
+            description: data.description,
+            brandName: data.brandName,
+            modelNo: data.modelNo,
+            productID: data.productID,
+            warranty: data.warranty,
+            discount: data.discount,
+            isAccessory: true,
+        };
 
-                category: "680fb9063dbd062321772ec6",
-                price: data.price,
-                totalItems: data.totalItems,
-                availableItems: data.availableItems,
-                url: finalMainUrl,
-                images: finalFileUrls,
-                description: data.description,
-                brandName: data.brandName,
-                modelNo: data.modelNo,
-                productID: data.productID,
-
-                warranty: data.warranty,
-
-                discount: data.discount,
-
-                isAccessory: true,
-
-
-            };
-
-            if (id) {
-                const response = await dispatch(UpdateAccessory({ id, data: jsonObject })).unwrap();
-                console.log("UU", response)
-                if (response.status == 200) {
+        if (id) {
+            dispatch(UpdateAccessory({ id, data: jsonObject })).then((response) => {
+                console.log("UU2", response)
+                if (response.payload.status == 200) {
                     toast.success('Accessory updated successfully!', {
                         style: {
                             marginTop: '100px',
@@ -318,9 +338,21 @@ export default function Page() {
                     router.push("/showaccessory");
                     setIsLoading(false);
                 }
-            } else {
-                const response = await dispatch(AddAccessory(jsonObject)).unwrap();
-                if (response.status == 200) {
+            }).catch((error) => {
+                toast.error('Failed to update accessory. Please try again.', {
+                    style: {
+                        marginTop: '100px',
+                        background: '#ff4d4f',
+                        color: '#fff',
+                    },
+                });
+                console.error("Update failed:", error);
+                setIsLoading(false);
+            });
+        } else {
+            dispatch(AddAccessory(jsonObject)).then((response) => {
+                console.log("UU2", response)
+                if (response.payload.status == 200) {
                     toast.success('Accessory added successfully!', {
                         style: {
                             marginTop: '100px',
@@ -331,18 +363,17 @@ export default function Page() {
                     router.push("/showaccessory");
                     setIsLoading(false);
                 }
-            }
-        } catch (error) {
-            toast.error('Failed to process accessory. Please try again.', {
-                style: {
-                    marginTop: '100px',
-                    background: '#ff4d4f',
-                    color: '#fff',
-                },
+            }).catch((error) => {
+                toast.error('Failed to add accessory. Please try again.', {
+                    style: {
+                        marginTop: '100px',
+                        background: '#ff4d4f',
+                        color: '#fff',
+                    },
+                });
+                console.error("Add failed:", error);
+                setIsLoading(false);
             });
-            console.error("Error submitting form:", error);
-        } finally {
-            setIsLoading(false);
         }
     };
 
