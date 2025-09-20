@@ -291,6 +291,7 @@ export default function Page() {
                 formData.append("file", selectedMainFile, uniqueFilename);
 
                 const uploadResponse = await dispatch(FileUpload(formData)).unwrap();
+                console.log("UploadResponse", uploadResponse)
                 if (uploadResponse?.fileUrl) {
                     finalMainUrl = uploadResponse.fileUrl;
                     setMainUrl(uploadResponse.fileUrl);
@@ -353,7 +354,7 @@ export default function Page() {
             if (id) {
                 const response = await dispatch(UpdateProductById({ id, data: jsonObject })).unwrap();
                 console.log("UU", response)
-                if (response.status == 200) {
+                if (response.status == 201) {
                     // toast.success('Product updated successfully!', {
                     //     style: {
                     //         marginTop: '100px',
@@ -361,12 +362,13 @@ export default function Page() {
                     //         color: '#fff',
                     //     },
                     // });
-                    router.push("/showcat");
+                    router.push("/showProduct");
                     setIsLoading(false);
                 }
             } else {
                 const response = await dispatch(AddProduct(jsonObject)).unwrap();
-                if (response.status == 200) {
+                console.log("UU", response)
+                if (response.status == 201) {
                     toast.success('Product added successfully!', {
                         style: {
                             marginTop: '100px',
@@ -374,7 +376,7 @@ export default function Page() {
                             color: '#fff',
                         },
                     });
-                    router.push("/showcat");
+                    router.push("/showProduct");
                     setIsLoading(false);
                 }
             }

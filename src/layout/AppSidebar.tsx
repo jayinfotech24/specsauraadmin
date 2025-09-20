@@ -32,6 +32,9 @@ type NavItem = {
   subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
 };
 
+
+
+
 const navItems: NavItem[] = [
   {
     icon: <GridIcon />,
@@ -185,7 +188,47 @@ const AppSidebar: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
   const [isNavigating, setIsNavigating] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
+
+  const handleLogout = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = () => {
+    setIsNavigating(true);
+    setShowLogoutConfirm(false);
+    // 1. Dispatch a logout action to clear user state from Redux
+    // dispatch(logout());
+
+    // 2. Remove token or user data from local storage
+    localStorage.removeItem("authToken"); // Use your specific key
+
+    // 3. Redirect to the sign-in page
+    router.push("/signin"); // Or your login route
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutConfirm(false);
+  };
+  const LogoutIcon = () => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+
+    >
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" y1="12" x2="9" y2="12" />
+    </svg>
+  );
   const renderMenuItems = (
     navItems: NavItem[],
     menuType: "main" | "others"
@@ -379,6 +422,54 @@ const AppSidebar: React.FC = () => {
   return (
     <>
       {isNavigating && <GlobalLoading />}
+
+      {/* Logout Confirmation Dialog */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <div className="flex items-center mb-4">
+              <div className="flex-shrink-0 w-10 h-10 mx-auto bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center">
+                <svg
+                  className="w-6 h-6 text-red-600 dark:text-red-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div className="text-center">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                Confirm Logout
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                Are you sure you want to logout? You will need to sign in again to access your account.
+              </p>
+              <div className="flex gap-3 justify-center">
+                <button
+                  onClick={cancelLogout}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmLogout}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors duration-200"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <aside
         className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
           ${isExpanded || isMobileOpen
@@ -459,7 +550,21 @@ const AppSidebar: React.FC = () => {
               {renderMenuItems(othersItems, "others")}
             </div> */}
             </div>
+            <div className="mb-6">
+              <button
+                onClick={handleLogout}
+                className={`menu-item group w-full menu-item-inactive ${!isExpanded && !isHovered ? "lg:justify-center" : "lg:justify-start"}`}
+              >
+                <span className="menu-item-icon-inactive group-hover:text-red-500">
+                  <LogoutIcon />
+                </span>
+                {(isExpanded || isHovered || isMobileOpen) && (
+                  <span className="menu-item-text group-hover:text-red-500">Logout</span>
+                )}
+              </button>
+            </div>
           </nav>
+
           {/* {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null} */}
         </div>
       </aside>
