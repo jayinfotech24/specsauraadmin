@@ -53,8 +53,8 @@ export default function Page() {
     const brandMap = [
         { img: "/Images/brand1.jpg", type: "Ascend Drip" },
         { img: "/Images/brand2.jpg", type: "Seraphic" },
-        { img: "/Images/brand3.jpg", type: "PriumX" },
-        { img: "/Images/brand4.jpg", type: "halospecs" }
+        { img: "/Images/brand3.jpg", type: "Prium X" },
+        { img: "/Images/brand4.jpg", type: "Halospecs" }
     ];
 
     const schema = Yup.object().shape({
@@ -280,6 +280,7 @@ export default function Page() {
 
     const submitHandler = async (data) => {
         setIsLoading(true);
+
         try {
             let finalMainUrl = MainUrl;
             let finalFileUrls = FileUrls;
@@ -350,7 +351,7 @@ export default function Page() {
                 isAccessory: false
 
             };
-
+            console.log("Data", jsonObject)
             if (id) {
                 const response = await dispatch(UpdateProductById({ id, data: jsonObject })).unwrap();
                 console.log("UU", response)
@@ -367,7 +368,7 @@ export default function Page() {
                 }
             } else {
                 const response = await dispatch(AddProduct(jsonObject)).unwrap();
-                console.log("UU", response)
+                console.log("UU", jsonObject)
                 if (response.status == 201) {
                     toast.success('Product added successfully!', {
                         style: {
@@ -388,7 +389,7 @@ export default function Page() {
             //         color: '#fff',
             //     },
             // });
-            console.error("Error submitting form:", error);
+            console.log("Error submitting form:", error);
         } finally {
             setIsLoading(false);
         }
