@@ -355,14 +355,14 @@ export default function Page() {
             if (id) {
                 const response = await dispatch(UpdateProductById({ id, data: jsonObject })).unwrap();
                 console.log("UU", response)
-                if (response.status == 201) {
-                    // toast.success('Product updated successfully!', {
-                    //     style: {
-                    //         marginTop: '100px',
-                    //         background: '#52c41a',
-                    //         color: '#fff',
-                    //     },
-                    // });
+                if (response.status == 200) {
+                    toast.success('Product updated successfully!', {
+                        style: {
+                            marginTop: '100px',
+                            background: '#52c41a',
+                            color: '#fff',
+                        },
+                    });
                     router.push("/showProduct");
                     setIsLoading(false);
                 }
