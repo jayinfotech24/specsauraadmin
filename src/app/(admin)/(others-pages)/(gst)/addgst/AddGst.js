@@ -65,11 +65,12 @@ export default function AddGst() {
             };
 
 
-            console.log("OO", jsonObject)
+            console.log("OO", jsonObject, id)
             if (id) {
+                console.log("Id", id)
                 const response = await dispatch(UpdateGst({ id, data: jsonObject })).unwrap();
                 console.log("Response", response)
-                if (response.status == 201) {
+                if (response.status == 200) {
                     toast.success('Rate updated successfully!');
                     setIsNavigating(true);
                     router.push("/showgst");

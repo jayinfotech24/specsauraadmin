@@ -667,12 +667,12 @@ export default function Page() {
                                         hint={errors.image?.message}
                                     />
                                 </div>
-                                {localMainUrl && (
+                                {(localMainUrl || MainUrl) && (
                                     <div className={styles.imageContainer}>
                                         <div className={styles.imageWrapper}>
                                             <Image
                                                 alt="product"
-                                                src={localMainUrl}
+                                                src={localMainUrl || MainUrl}
                                                 width={200}
                                                 height={200}
                                                 style={{ objectFit: 'cover' }}
@@ -691,8 +691,8 @@ export default function Page() {
                                     />
                                 </div>
                                 <div className={styles.containerWrapper}>
-                                    {localFileUrls?.length > 0 &&
-                                        localFileUrls?.map((item, index) => (
+                                    {(localFileUrls?.length > 0 || FileUrls?.length > 0) &&
+                                        (localFileUrls.length > 0 ? localFileUrls : FileUrls)?.map((item, index) => (
                                             <div key={index} className={styles.imageContainer}>
                                                 <div className={styles.imageWrapper}>
                                                     <Image
